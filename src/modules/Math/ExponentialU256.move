@@ -1,4 +1,4 @@
-address 0x5f1288f6687eb8ba746081641bc4342e {
+address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
 module ExponentialU256 {
     use 0x1::Errors;
     use 0x1::U256::{Self};

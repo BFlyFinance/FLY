@@ -1,5 +1,7 @@
 address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
 module Bond {
+
+    use 0x1::Token;
     use 0x1::Timestamp;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::FLY;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
@@ -7,7 +9,11 @@ module Bond {
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Treasury;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::TreasuryHelper;
 
-    struct Info<TokenType: store> {
+    const INSUFFICIENT_AMOUNT: u64 = 1;
+    const EXCEEDS_MAX_AMOUNT: u64 = 2;
+    const SLIPPAGE_LIMIT: u64 = 2;
+
+    struct Info<TokenType: store> has key {
         total_debt: u128,
         last_update_time: u64,
     }
@@ -25,18 +31,23 @@ module Bond {
 
     }
 
-    public fun deposit<TokenType: store>(sender: &signer, amount: u128, max_price: u128)acquires Bond {
+    public fun deposit<TokenType: store>(sender: &signer, amount: u128, max_price: u128)acquires Info, Bond {
         let admin_address = Admin::admin_address();
         decayDebt();
         let (control_var, minimum_price, max_payout, fee, max_debt, vesting_term)
             = Config::get_bond_config<TokenType>();
         // check sender token amount
+        assert(Account::balance<TokenType>(Signer::address_of(sender)) >= amount, INSUFFICIENT_AMOUNT);
         // check max debt
+        let info = borrow_global<Info<TokenType>>(admin_address);
+        assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
         // check price
+        let native_price = bond_price<TokenType>();
+        assert(max_price >= native_price, SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
-        let payout = payout_for(value);
+        let payout = payout_for<TokenType>(value);
         let dao_fee = TreasuryHelper::fee_calc(copy payout, fee);
-        let profit = TreasuryHelper::profit_calc(copy payout, copy dao_fee);
+        let profit = TreasuryHelper::profit_calc(copy value, copy payout, copy dao_fee);
         // check payout too small (0.01)
         // check payout bigger than max_payout
         Treasury::deposit<TokenType>(amount);
@@ -48,13 +59,16 @@ module Bond {
 
     }
 
-    public fun redeem<TokenType: store>(sender: &signer) acquires Bond {
+    public fun redeem<TokenType: store>(sender: &signer) acquires Bond, Info {
+        let admin_address = Admin::admin_address();
         let percent = percent_vested_for(Signer::address_of(sender));
         let voucher = borrow_global_mut<Bond<TokenType>>(Singer::address_of(sender));
         let balance = Token::value<FLY::FLY>(voucher.token);
+        let info = borrow_global_mut<Info<TokenType>>(admin_address);
         if (percent == 1) {
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, balance);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
+            info.total_debt = info.total_debt + balance;
         } else {
             let amount = bond.payout * percent;
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, amount);
@@ -88,8 +102,8 @@ module Bond {
 
     }
 
-    fun payout_for(value: u128): u128 {
-        1
+    fun payout_for<TokenType: store>(value: u128): u128 {
+        value / bond_price<TokenType>()
     }
 
     public fun percent_vested_for<TokenType: store>(address: address): u128 acquires Bond {
@@ -101,6 +115,43 @@ module Bond {
         } else {
             (time_now - bond.last_time) / bond.vesting
         }
+    }
+
+    public fun bond_price<TokenType> (): u128 acquires Info{
+
+        1 + bcv * debtRatio
+    }
+
+    public fun debt_ratio<TokenType: store>(): u128 acquires Info {
+        let admin_address = Admin::admin_address();
+        let decay_debt = debt_decay<TokenType>();
+        let info = borrow_global_mut<Info<TokenType>>(admin_address);
+        let debt = info.total_debt - decay_debt;
+        let FLY_amount = Token::market_cap<FLY::FLY>();
+        // TODO: use exponential
+        debt / FLY_amount
+
+    }
+
+    fun decay_debt<TokenType: store>() acquires Info {
+        let decay_amount = debt_decay<TokenType>();
+        let admin_address = Admin::admin_address();
+        let info = borrow_global_mut<Info<TokenType>>(admin_address);
+        info.total_debt = info.total_debt - decay_amount;
+        info.last_update_time = Timestamp::now_milliseconds();
+    }
+
+    fun debt_decay<TokenType: store>(): u128 acquires Info {
+        let admin_address = Admin::admin_address();
+        let info = borrow_global<Info<TokenType>>(admin_address);
+        let time_now = Timestamp::now_milliseconds();
+        let (_, _, _, _, _, vesting_term)
+            = Config::get_bond_config<TokenType>();
+        let decay_: u128 = info.total_debt * ((time_now - info.last_update_time) / vesting_term as u128);
+        if (decay_ > info.total_debt) {
+            decay_ = *&info.total_debt
+        };
+        decay_
     }
 
 }

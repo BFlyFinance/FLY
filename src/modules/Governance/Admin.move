@@ -1,6 +1,8 @@
 address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
 module Admin {
 
+    use 0x1::Token::{Self, TokenCode};
+
     const INVALID_ADDRESS: u64 = 1;
 
     public fun admin_address(): address {
@@ -24,6 +26,16 @@ module Admin {
     public fun is_barnard(): bool {
         let id = ChainId::get();
         id == 253
+    }
+
+    public fun is_reserve<TokenType: store>(): bool {
+        if (Token::is_same_token<TokenType, FLY>()) {
+            true
+        } else if (Token::is_same_token<TokenType, FAI>()) {
+            true
+        } else if (Token::is_same_token<TokenType, LP>()) {
+            false
+        }
     }
 }
 }
