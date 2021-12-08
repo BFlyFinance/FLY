@@ -8,6 +8,7 @@ module Bond {
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Config;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Treasury;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::TreasuryHelper;
+    use 0xb987F1aB0D7879b2aB421b98f96eFb44::ExponentialU256::{Self, Exp};
 
     const INSUFFICIENT_AMOUNT: u64 = 1;
     const EXCEEDS_MAX_AMOUNT: u64 = 2;
@@ -43,7 +44,7 @@ module Bond {
         assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
         // check price
         let native_price = bond_price<TokenType>();
-        assert(max_price >= native_price, SLIPPAGE_LIMIT);
+        assert(ExponentialU256::greater_than_exp(ExponentialU256::exp_direct(max_price), native_price), SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
         let payout = payout_for<TokenType>(value);
         let dao_fee = TreasuryHelper::fee_calc(copy payout, fee);
@@ -65,12 +66,13 @@ module Bond {
         let voucher = borrow_global_mut<Bond<TokenType>>(Singer::address_of(sender));
         let balance = Token::value<FLY::FLY>(voucher.token);
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
-        if (percent == 1) {
+        if (ExponentialU256::equal_exp(percent, ExponentialU256::exp(1, 1))) {
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, balance);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
             info.total_debt = info.total_debt + balance;
         } else {
-            let amount = bond.payout * percent;
+            let amount_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(bond.payout), percent);
+            let amount = ExponentialU256::mantissa_to_u128(amount_exp);
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, amount);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
         };
@@ -103,34 +105,34 @@ module Bond {
     }
 
     fun payout_for<TokenType: store>(value: u128): u128 {
-        value / bond_price<TokenType>()
+        let token_price = bond_price<TokenType>();
+        let amount_exp = ExponentialU256::div_exp(ExponentialU256::exp_direct(value), token_price);
+        ExponentialU256::mantissa_to_u128(amount_exp)
     }
 
-    public fun percent_vested_for<TokenType: store>(address: address): u128 acquires Bond {
+    public fun percent_vested_for<TokenType: store>(address: address): Exp acquires Bond {
         let bond = borrow_global<Bond<TokenType>>(address);
         let time_now = Timestamp::now_milliseconds();
         let percent = (time_now - bond.start_time) / bond.vesting;
         if (percent > 1) {
-            1
+            ExponentialU256::exp(1, 1)
         } else {
-            (time_now - bond.last_time) / bond.vesting
+            ExponentialU256::exp((time_now - bond.last_time) as u128, bond.vesting as u128)
         }
     }
 
-    public fun bond_price<TokenType> (): u128 acquires Info{
-
-        1 + bcv * debtRatio
+    public fun bond_price<TokenType> (): Exp acquires Info{
+        let bcv_debt_ratio = ExponentialU256::mul_exp(ExponentialU256::exp(bcv, 1) * debtRatio<TokenType>());
+        ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp(1, 1))
     }
 
-    public fun debt_ratio<TokenType: store>(): u128 acquires Info {
+    public fun debt_ratio<TokenType: store>(): Exp acquires Info {
         let admin_address = Admin::admin_address();
         let decay_debt = debt_decay<TokenType>();
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         let debt = info.total_debt - decay_debt;
         let FLY_amount = Token::market_cap<FLY::FLY>();
-        // TODO: use exponential
-        debt / FLY_amount
-
+        ExponentialU256::exp(debt, FLY_amount)
     }
 
     fun decay_debt<TokenType: store>() acquires Info {
@@ -147,7 +149,9 @@ module Bond {
         let time_now = Timestamp::now_milliseconds();
         let (_, _, _, _, _, vesting_term)
             = Config::get_bond_config<TokenType>();
-        let decay_: u128 = info.total_debt * ((time_now - info.last_update_time) / vesting_term as u128);
+        let decay_percent = ExponentialU256::exp((time_now - info.last_update_time) as u128, vesting_term as u128);
+        let decay_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(info.total_debt), decay_percent);
+        let decay_ = ExponentialU256::mantissa_to_u128(decay_exp);
         if (decay_ > info.total_debt) {
             decay_ = *&info.total_debt
         };

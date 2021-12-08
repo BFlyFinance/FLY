@@ -18,16 +18,17 @@ module TreasuryHelper{
 
 
     public fun fee_calc(payout: u128, fee: u128): u128 {
-        // TODO: calc
-        payout * fee
+        let fee_exp = ExponentialU256::exp_direct(fee);
+        let payout_exp = ExponentialU256::exp_direct(payout);
+        let fee_amount = ExponentialU256::mul_exp(payout_exp, fee_exp);
+        ExponentialU256::mantissa_to_u128(fee_amount)
     }
 
     public fun profit_calc(value: u128, payout: u128, dao_fee: u128): u128 {
-        // TODO: calc
         value - payout - dao_fee
     }
 
-    public fun markdown<LiquidityToken<Token_x, Token_y>>(): u128 {
+    public fun markdown<Token_x, Token_y>(): u128 {
         // TODO: calc
         let fly_decimal = Token::scaling_factor<FLY::FLY>();
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
@@ -38,18 +39,18 @@ module TreasuryHelper{
         }
     }
 
-    fun get_total_value<LiquidityToken<Token_x, Token_y>>(): u128 {
+    fun get_total_value<Token_x, Token_y>(): u128 {
         let k_value = get_k_value<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         2 * (Math::sqrt(k_value) as u128)
     }
 
-    fun valuation<LiquidityToken<Token_x, Token_y>>(amount: u128): u128 {
+    fun valuation<Token_x, Token_y>(amount: u128): u128 {
         let total_value = get_total_value<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         let total_amount = Token::market_cap<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         total_value * (amount / total_ammount)
     }
 
-    fun get_k_value<LiquidityToken<Token_x, Token_y>>(): u128{
+    fun get_k_value<Token_x, Token_y>(): u128{
         let x_decimals = Token::scaling_factor<Token_x>();
         let y_decimals = Token::scaling_factor<Token_y>();
         let p_decimals = Token::scaling_factor<TokenSwap::LiquidityToken<Token_x, Token_y>>();
