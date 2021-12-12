@@ -8,17 +8,17 @@ module FLY {
 
     const FLY_PRECISION: u8 = 9;
 
-    public fun initialize(account: &signer): (Token::MintCapability<FAI>, Token::BurnCapability<FAI>) {
-        Token::register_token<FAI>(account, FAI_PRECISION);
-        Account::do_accept_token<FAI>(account);
-        let mint_cap = Token::remove_mint_capability<FAI>(account);
-        let burn_cap = Token::remove_burn_capability<FAI>(account);
+    public fun initialize(account: &signer): (Token::MintCapability<FLY>, Token::BurnCapability<FLY>) {
+        Token::register_token<FLY>(account, FLY_PRECISION);
+        Account::do_accept_token<FLY>(account);
+        let mint_cap = Token::remove_mint_capability<FLY>(account);
+        let burn_cap = Token::remove_burn_capability<FLY>(account);
         (mint_cap, burn_cap)
     }
 
-    public fun mint_with_cap(amount: u128, cap: &Token::MintCapability<FAI>): Token::Token<FAI>
+    public fun mint_with_cap(amount: u128, cap: &Token::MintCapability<FLY>): Token::Token<FLY>
     {
-        Token::mint_with_capability<FAI>(
+        Token::mint_with_capability<FLY>(
             cap,
             amount
         )

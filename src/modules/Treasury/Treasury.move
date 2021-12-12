@@ -1,8 +1,9 @@
 address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
 module Treasury {
 
-    use 0x1::Token;
     use 0x1::Signer;
+    use 0x1::Account;
+    use 0x1::Token::{Self, Token};
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::FLY;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
 
@@ -10,12 +11,12 @@ module Treasury {
     const INVALID_AMOUNT: u64 = 2;
 
 
-    struct AssetPool<TokenType> has key, store {
+    struct AssetPool<TokenType: copy+drop+store> has key, store {
         asset: Token<TokenType>
     }
 
-    struct Dao<TokenType> has key, store {
-        token: Token<TokenType>
+    struct Dao has key, store {
+        token: Token<FLY::FLY>
     }
 
     struct FLYMintCap has key, store {
@@ -29,15 +30,24 @@ module Treasury {
     struct SharedMintCap has key, store {}
 
 
-    public fun initialize(sender: &signer) {
+    public fun initialize(sender: &signer, amount: u128) {
         let (mint_cap, burn_cap) = FLY::initialize(sender);
+        // ALERT: init mint
+        let token = FLY::mint_with_cap(amount, &mint_cap);
+        Account::deposit_to_self<FLY::FLY>(sender, token);
         move_to(sender, FLYMintCap {
             cap: mint_cap
         });
         move_to(sender, FLYBurnCap {
             cap: burn_cap
         });
-        // init pools for support asset
+        move_to(sender, AssetPool<FLY::FLY>{asset: Token::zero<FLY::FLY>()});
+        move_to(sender, Dao{token: Token::zero<FLY::FLY>()});
+    }
+
+    public fun initialize_pool<TokenType: copy+drop+store>(sender: &signer) {
+        Admin::is_admin(sender);
+        move_to(sender, AssetPool<TokenType>{asset: Token::zero<TokenType>()});
     }
 
     public fun get_mint_cap(sender: &signer): SharedMintCap {
@@ -45,48 +55,60 @@ module Treasury {
         SharedMintCap {}
     }
 
-    public fun deposit<TokenType> (sender: &signer, amount: u128) acquires AssetPool {
+    public fun deposit<TokenType: copy+drop+store> (sender: &signer, amount: u128) acquires AssetPool {
         let balance = Account::balance<TokenType>(Signer::address_of(sender));
         assert(balance >= amount, INVALID_AMOUNT);
         let admin_address = Admin::admin_address();
         let pool = borrow_global_mut<AssetPool<TokenType>>(admin_address);
-        let token = Account::withdraw<Token>(sender, amount);
+        let token = Account::withdraw<TokenType>(sender, amount);
         Token::deposit(&mut pool.asset, token);
     }
 
     public fun deposit_dao_fee_with_cap(amount: u128, cap: &SharedMintCap) acquires Dao, FLYMintCap {
        // mint fly then deposit to dao
+        let _ = cap;
         let admin_address = Admin::admin_address();
-        let dao = borrow_global_mut<Dao<FLY::FLY>>(admin_address);
+        let dao = borrow_global_mut<Dao>(admin_address);
         let cap = borrow_global<FLYMintCap>(admin_address);
-        let token = FLY::mint_with_cap(amount, cap.cap);
+        let token = FLY::mint_with_cap(amount, &cap.cap);
         Token::deposit<FLY::FLY>(&mut dao.token, token);
     }
 
-    public fun burn_dao<TokenType>(sender: &signer, amount: u128) acquires Dao, FLYBurnCap {
+    public fun burn_dao(sender: &signer, amount: u128) acquires Dao, FLYBurnCap {
         let admin_address = Admin::admin_address();
         assert(admin_address == Signer::address_of(sender), INVALID_ADDRESS);
-        let dao = borrow_global_mut<Dao<TokenType>>(admin_address);
-        assert(Token::value<TokenType>(dao.token) >= amount, INVALID_AMOUNT);
-        let token_to_burn = Token::withdraw<TokenType>(&mut dao.token, amount);
+        let dao = borrow_global_mut<Dao>(admin_address);
+        assert(Token::value<FLY::FLY>(&dao.token) >= amount, INVALID_AMOUNT);
+        let token_to_burn = Token::withdraw<FLY::FLY>(&mut dao.token, amount);
         let fly_burn_cap = borrow_global<FLYBurnCap>(admin_address);
-        FLY::burn_with_capability(token_to_burn, fly_burn_cap.cap);
+        FLY::burn_with_cap(token_to_burn, &fly_burn_cap.cap);
     }
 
-    public fun mint_reward_with_cap(reward_rate: u128, cap: &SharedMintCap): Token<FLY> acquires FLYMintCap {
+    public fun mint_reward_with_cap(reward_rate: u128, cap: &SharedMintCap): Token<FLY::FLY> acquires FLYMintCap {
+        let _ = cap;
         let admin_address = Admin::admin_address();
         let cap = borrow_global<FLYMintCap>(admin_address);
         let total_fly = Token::market_cap<FLY::FLY>();
         // TODO: calc
         let reward = total_fly * reward_rate;
         // mint fly with cap
-        FLY::mint_with_cap(amount, &cap.cap)
+        FLY::mint_with_cap(reward, &cap.cap)
     }
 
-    public fun withdraw<TokenType>(sender: &signer, amount: u128) {
+    public fun withdraw<TokenType: copy+drop+store>(sender: &signer, amount: u128) acquires AssetPool {
+        Admin::is_admin(sender);
+        let pool = borrow_global_mut<AssetPool<TokenType>>(Signer::address_of(sender));
+        let balance = Token::value<TokenType>(&pool.asset);
+        assert(balance >= amount, INVALID_AMOUNT);
+        let token = Token::withdraw<TokenType>(&mut pool.asset, amount);
+        Account::deposit_to_self<TokenType>(sender, token);
+    }
+
+    public fun mint_bond_token_with_cap(amount: u128, cap: &SharedMintCap): Token<FLY::FLY> acquires FLYMintCap {
+        let _ = cap;
         let admin_address = Admin::admin_address();
-        let sender_address = Signer::address_of(sender);
-        assert(admin_address == sender_address, INVALID_ADDRESS);
+        let cap = borrow_global<FLYMintCap>(admin_address);
+        FLY::mint_with_cap(amount, &cap.cap)
 
     }
 

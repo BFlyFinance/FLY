@@ -14,7 +14,7 @@ module TokenSwap {
     use 0x1::Event;
     use 0x3db7a2da7444995338a2413b151ee437::SafeMath;
 
-    struct LiquidityToken<X, Y> has key, store { }
+    struct LiquidityToken<X, Y> has key, store, drop, copy { }
 
     struct LiquidityTokenCapability<X, Y> has key, store {
         mint: Token::MintCapability<LiquidityToken<X, Y>>,

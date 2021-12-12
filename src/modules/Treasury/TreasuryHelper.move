@@ -1,18 +1,24 @@
 address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
 module TreasuryHelper{
 
+    use 0x1::STC;
     use 0x1::Math;
     use 0x1::Token;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::FLY;
+    use 0xb987F1aB0D7879b2aB421b98f96eFb44::FAI;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::ExponentialU256;
-    use 0x3db7a2da7444995338a2413b151ee437::TokenSwap::{Self, LiquidityToken};
+    use 0x3db7a2da7444995338a2413b151ee437::TokenSwap::{Self};
 
-    public fun value_of<TokenType> (amount: u128): u128 {
+    public fun value_of<TokenType: store> (amount: u128): u128 {
         if (Admin::is_reserve<TokenType>()) {
-            amount * Token::scaling_factor<FLY>() / Token::scaling_factor<TokenType>()
+            amount * Token::scaling_factor<FLY::FLY>() / Token::scaling_factor<TokenType>()
         } else {
-            valuation<TokenType>(amount)
+            if (Token::is_same_token<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>, TokenType>()) {
+                valuation<FLY::FLY, STC::STC>(amount)
+            } else {
+                valuation<FLY::FLY, FAI::FAI>(amount)
+            }
         }
     }
 
@@ -28,7 +34,7 @@ module TreasuryHelper{
         value - payout - dao_fee
     }
 
-    public fun markdown<Token_x, Token_y>(): u128 {
+    public fun markdown<Token_x: store, Token_y: store>(): u128 {
         // TODO: calc
         let fly_decimal = Token::scaling_factor<FLY::FLY>();
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
@@ -39,23 +45,20 @@ module TreasuryHelper{
         }
     }
 
-    fun get_total_value<Token_x, Token_y>(): u128 {
-        let k_value = get_k_value<TokenSwap::LiquidityToken<Token_x, Token_y>>();
+    fun get_total_value<Token_x: store, Token_y: store>(): u128 {
+        let k_value = get_k_value<Token_x, Token_y>();
         2 * (Math::sqrt(k_value) as u128)
     }
 
-    fun valuation<Token_x, Token_y>(amount: u128): u128 {
-        let total_value = get_total_value<TokenSwap::LiquidityToken<Token_x, Token_y>>();
+    fun valuation<Token_x: store, Token_y: store>(amount: u128): u128 {
+        let total_value = get_total_value<Token_x, Token_y>();
         let total_amount = Token::market_cap<TokenSwap::LiquidityToken<Token_x, Token_y>>();
-        total_value * (amount / total_ammount)
+        total_value * (amount / total_amount)
     }
 
-    fun get_k_value<Token_x, Token_y>(): u128{
-        let x_decimals = Token::scaling_factor<Token_x>();
-        let y_decimals = Token::scaling_factor<Token_y>();
+    fun get_k_value<Token_x: store, Token_y: store>(): u128{
         let p_decimals = Token::scaling_factor<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
-        let decimals = x_decimals * y_decimals / p_decimals;
         reserve_x * reserve_y / p_decimals
     }
 
@@ -64,7 +67,7 @@ module TreasuryHelper{
         let distribute_ratio = ExponentialU256::exp(amount, stake_amount);
         let distribute_ratio_add_one = ExponentialU256::add_exp(ExponentialU256::exp(1, 1), distribute_ratio);
         let new_index_exp = ExponentialU256::mul_exp(old_index_exp, distribute_ratio_add_one);
-        Exponential::mantissa_to_u128(new_index_exp)
+        ExponentialU256::mantissa_to_u128(new_index_exp)
     }
 
     public fun reward(pool_index: u128, user_index: u128, amount: u128): u128 {

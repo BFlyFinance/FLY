@@ -9,16 +9,17 @@ module Stake {
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Config;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Treasury;
+    use 0xb987F1aB0D7879b2aB421b98f96eFb44::TreasuryHelper;
 
     const INSUFFICIENT_AMOUNT: u64 = 1;
 
-    struct Pool<TokenType> has key, store {
-        token: Token<TokenType>,
+    struct Pool has key, store {
+        token: Token::Token<FLY::FLY>,
         index: u128,
         last_update_time: u64
     }
 
-    struct sFLY has key, store {
+    struct SFLY has key, store {
         amount: u128,
         warmup_amount: u128,
         warmup_expires: u64,
@@ -26,8 +27,8 @@ module Stake {
         index_last_update: u64
     }
 
-    struct warmup<TokenType> has key, store {
-        token: Token<TokenType>,
+    struct Warmup has key, store {
+        token: Token::Token<FLY::FLY>,
         expires: u64
     }
 
@@ -35,10 +36,22 @@ module Stake {
         cap: Treasury::SharedMintCap
     }
 
+    public fun initialize(sender: &signer) {
+        Admin::is_admin(sender);  
+        move_to(sender, Pool {
+            token: Token::zero<FLY::FLY>(),
+            index: 1u128,
+            last_update_time: Timestamp::now_milliseconds()
+        });
+        let mint_cap = Treasury::get_mint_cap(sender);
+        move_to(sender, MintCap {cap: mint_cap});
+
+    }
+
     fun init_sfly(sender: &signer) {
         let address = Signer::address_of(sender);
-        if (!exists<sFLY>(address)) {
-            move_to(sender, sFLY{
+        if (!exists<SFLY>(address)) {
+            move_to(sender, SFLY{
                 amount: 0u128,
                 warmup_amount: 0128,
                 warmup_expires: 0u64,
@@ -49,107 +62,108 @@ module Stake {
     }
 
     // retrieve fly from warmup
-    public fun claim() acquires warmup, Pool {
+    public fun claim() acquires Warmup, Pool, MintCap {
         let time_now = Timestamp::now_milliseconds();
         let admin_address = Admin::admin_address();
-        let warmup = borrow_global_mut<warmup<FLY>>(admin_address);
-        let pool = borrow_global_mue<Pool<FLY>>(admin_address);
-        if (warmup.warmup_expires <= time_now) {
-            rebase<FLY::FLY>();
+        let warmup = borrow_global<Warmup>(admin_address);
+        if (warmup.expires <= time_now) {
+            rebase();
             // retrieve FLY into Pool
-            let (_, rabse_period) = Config::get_stake_config<TokenType>();
-            let balance = Token::value(warmup.token);
-            let token = Token::withdraw(&mut warmup.token, balance);
-            Token::deposit(&mut pool.token, token);
+            let warmup = borrow_global_mut<Warmup>(admin_address);
+            let pool = borrow_global_mut<Pool>(admin_address);
+            let (_, rebase_period) = Config::get_stake_config<FLY::FLY>();
+            let balance = Token::value<FLY::FLY>(&warmup.token);
+            let token = Token::withdraw<FLY::FLY>(&mut warmup.token, balance);
+            Token::deposit<FLY::FLY>(&mut pool.token, token);
             // set next expires
             warmup.expires = warmup.expires + rebase_period;
         };
     }
 
     // forfeit sFLY in warmup and retrieve FLY
-    public fun forfeit(sender: &signer) acquires SFLY, warmup {
+    public fun forfeit(sender: &signer) acquires SFLY, Warmup, Pool, MintCap {
         rebase();
         claim();
         let admin_address = Admin::admin_address();
         let address = Signer::address_of(sender);
-        let sFLY = borrow_global_mut<sFLY>(address);
+        let s_fly = borrow_global_mut<SFLY>(address);
         let time_now = Timestamp::now_milliseconds();
-        if (sFLY.warmup_amount > 0 && warmup_expires < time_now) {
-            let warmup = borrow_global_mut<warmup>(admin_address);
+        if (s_fly.warmup_amount > 0 && s_fly.warmup_expires < time_now) {
+            let warmup = borrow_global_mut<Warmup>(admin_address);
             // send FLY to sender
-            let token = Token::withdraw(&mut warmup.token, sFLY.warmup_amount);
-            Token::deposit<FLY::FLY>(sender, token);
-            sFLY.warmup_amount = 0u128;
-            sFLY.warmup_expires = 0u64;
+            let token = Token::withdraw(&mut warmup.token, s_fly.warmup_amount);
+            Account::deposit_to_self<FLY::FLY>(sender, token);
+            s_fly.warmup_amount = 0u128;
+            s_fly.warmup_expires = 0u64;
         };
     }
 
-    public fun stake<TokenType>(sender: &signer, amount: u128)acquires warmup, sFLY {
+    public fun stake(sender: &signer, amount: u128)acquires Warmup, SFLY, Pool, MintCap {
         rebase();
         claim();
         // check sender have enough amount
         let admin_address = Admin::admin_address();
-        let balance = Account::balance<TokenType>(Signer::address_of(sender));
+        let balance = Account::balance<FLY::FLY>(Signer::address_of(sender));
         assert(balance >= amount, INSUFFICIENT_AMOUNT);
-        let warmup = borrow_global_mut<warmup<TokenType>>(admin_address);
-        Token::deposit<TokenType>(&mut warmup.token, token);
+        let token = Account::withdraw<FLY::FLY>(sender, amount);
+        let warmup = borrow_global_mut<Warmup>(admin_address);
+        Token::deposit<FLY::FLY>(&mut warmup.token, token);
         init_sfly(sender);
-        let sFLY = borrow_global_mut<sFLY>(Signer::address_of(sender));
-        sFLY.warmup_amount = amount;
+        let s_fly = borrow_global_mut<SFLY>(Signer::address_of(sender));
+        s_fly.warmup_amount = amount;
         // set warmup expires
-        sFLY.warmup_expires = warmup.expires;
-
+        s_fly.warmup_expires = warmup.expires;
     }
 
-    public fun unstake<TokenType>(sender: &signer, amount: u128) acquires Pool, sFLY{
+    public fun unstake(sender: &signer, amount: u128) acquires Pool, SFLY, Warmup, MintCap{
         rebase();
         claim();
-        fresh<TokenType>(Signer::address_of(sender));
-        let sFLY = borrow_global_mut<sFLY>(Signer::address_of(sender));
-        assert(amount <= sFLY.amount, INSUFFICIENT_AMOUNT);
-        sFLY.amount = sFLY.amount - amount;
-        let Pool = borrow_global_mut<Pool<TokenType>>(Admin::admin_address());
-        let tokens = Token::withdraw<TokenType>(&mut Pool.token, amount);
-        Account::deposit_to_self<TokenType>(sender, tokens);
+        fresh(Signer::address_of(sender));
+        let s_fly = borrow_global_mut<SFLY>(Signer::address_of(sender));
+        assert(amount <= s_fly.amount, INSUFFICIENT_AMOUNT);
+        s_fly.amount = s_fly.amount - amount;
+        let pool = borrow_global_mut<Pool>(Admin::admin_address());
+        let tokens = Token::withdraw<FLY::FLY>(&mut pool.token, amount);
+        Account::deposit_to_self<FLY::FLY>(sender, tokens);
     }
 
-    fun fresh<TokenType>(address: address) acquires Pool, sFLY {
-        let Pool = borrow_global<Pool<TokenType>>(Admin::admin_address());
-        let pool_index = *&Pool.index;
-        let sFLY = borrow_global_mut<sFLY>(copy address);
-        let user_index = *&sFLY.index;
-        let amount = *&sFLY.amount;
+    fun fresh(address: address) acquires Pool, SFLY {
+        let pool = borrow_global<Pool>(Admin::admin_address());
+        let pool_index = *&pool.index;
+        let s_fly = borrow_global_mut<SFLY>(copy address);
+        let user_index = *&s_fly.index;
+        let amount = *&s_fly.amount;
         let reward = TreasuryHelper::reward(pool_index, user_index, amount);
-        sFLY.amount = sFLY.amount + reward;
-        sFLY.index = pool_index;
-        sFLY.index_last_update = Timestamp::now_milliseconds();
+        s_fly.amount = s_fly.amount + reward;
+        s_fly.index = pool_index;
+        s_fly.index_last_update = Timestamp::now_milliseconds();
     }
 
-    public fun rebase<TokenType>() acquires Pool, MintCap {
+    public fun rebase() acquires Pool, MintCap, Warmup {
         let time_now = Timestamp::now_milliseconds();
-        let Pool = borrow_global<Pool<TokenType>>(Admin::address_of());
-        let (reward_rate, rabse_period) = Config::get_stake_config<TokenType>();
-        let next_rebase_at = Pool.last_update_time + rebase_period;
+        let pool = borrow_global_mut<Pool>(Admin::admin_address());
+        let (reward_rate, rebase_period) = Config::get_stake_config<FLY::FLY>();
+        let next_rebase_at = pool.last_update_time + rebase_period;
         if (next_rebase_at <= time_now) {
             // mint reward fly into Pool
             let admin_address = Admin::admin_address();
             let mint_cap = borrow_global<MintCap>(admin_address);
-            let token = Treasury::mint_reward_with_cap(reward_rate, mint_cap.cap);
-            let reward_amount = Token::value<FLY>(token);
-            let stake_amount = Token::value<FLY>(Pool.token);
+            let token = Treasury::mint_reward_with_cap(reward_rate, &mint_cap.cap);
+            let reward_amount = Token::value<FLY::FLY>(&token);
+            let stake_amount = Token::value<FLY::FLY>(&pool.token);
             // rebase index
-            let new_index = TreasuryHelper::new_index(old_index, amount, stake_amount);
-            Pool.index = new_index;
+            let new_index = TreasuryHelper::new_index(pool.index, reward_amount, stake_amount);
+            pool.index = new_index;
             // update next rebase time
-            Pool.next_rebase_at = Pool.next_rebase_at + rebase_period;
-            Token::deposit(&mut Pool.token, token);
+            pool.last_update_time = pool.last_update_time + rebase_period;
+            Token::deposit<FLY::FLY>(&mut pool.token, token);
         };
         claim();
     }
 
-    public fun index<TokenType>(): u128 acquires Pool {
-        let Pool = borrow_global<Pool<TokenType>>(Admin::address_of());
-        Pool.index
+    public fun index(): u128 acquires Pool {
+        let pool = borrow_global<Pool>(Admin::admin_address());
+        pool.index
     }
 }
 }

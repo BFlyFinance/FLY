@@ -3,7 +3,7 @@ module Config {
     use 0x1::Config;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
 
-    struct BondConfig<TokenType> {
+    struct BondConfig<TokenType> has copy, store, drop {
         control_var: u128,
         minimum_price: u128,
         max_payout: u128,
@@ -12,12 +12,12 @@ module Config {
         vesting_term: u128
     }
 
-    struct StakeConfig<TokenType> {
+    struct StakeConfig<TokenType> has copy, store, drop {
         reward_rate: u128,
         rebase_period: u64
     }
 
-    public fun new_BondConfig<TokenType: store>(
+    public fun new_BondConfig<TokenType: copy+drop+store>(
         control_var: u128,
         minimum_price: u128,
         max_payout: u128,
@@ -25,18 +25,18 @@ module Config {
         max_debt: u128,
         vesting_term: u128
     ): BondConfig<TokenType> {
-        BondConfig<Tokentype> {
-            control_var: u128,
-            minimum_price: u128,
-            max_payout: u128,
-            fee: u128,
-            max_debt: u128,
-            vesting_term: u128
+        BondConfig<TokenType> {
+            control_var: control_var,
+            minimum_price: minimum_price,
+            max_payout: max_payout,
+            fee: fee,
+            max_debt: max_debt,
+            vesting_term: vesting_term
 
         }
     }
 
-    public fun init_bond_config<TokenType: store>(
+    public fun init_bond_config<TokenType: copy+drop+store>(
         sender: &signer,
         control_var: u128,
         minimum_price: u128,
@@ -53,13 +53,13 @@ module Config {
             max_debt,
             vesting_term
         );
-        Config::publish_new_config<PositionConfig<PT>>(sender, config);
+        Config::publish_new_config<BondConfig<TokenType>>(sender, config);
     }
 
-    public fun get_bond_config<TokenType: store> (): (u128, u128, u128, u128, u128, u128) {
+    public fun get_bond_config<TokenType: copy+drop+store> (): (u128, u128, u128, u128, u128, u128) {
         let admin_address = Admin::admin_address();
         let config = Config::get_by_address<BondConfig<TokenType>>(admin_address);
-        retrun (
+        return (
             *&config.control_var,
             *&config.minimum_price,
             *&config.max_payout,
@@ -69,7 +69,7 @@ module Config {
         )
     }
 
-    public fun update_bond_config<TokenType: store> (
+    public fun update_bond_config<TokenType: copy+drop+store> (
         sender: &signer,
         control_var: u128,
         minimum_price: u128,
@@ -78,7 +78,7 @@ module Config {
         max_debt: u128,
         vesting_term: u128
     ) {
-        Config::set<BondConfig<TokenType>>(sender, BondConfig<Tokentype> {
+        Config::set<BondConfig<TokenType>>(sender, BondConfig<TokenType> {
             control_var: control_var,
             minimum_price: minimum_price,
             max_payout: max_payout,
@@ -88,7 +88,7 @@ module Config {
         });
     }
 
-        public fun new_StakeConfig<TokenType: store> (
+        public fun new_StakeConfig<TokenType: copy+drop+store> (
         rate: u128,
         period: u64
     ): StakeConfig<TokenType> {
@@ -98,16 +98,16 @@ module Config {
         }
     }
 
-    public fun init_stake_config<TokenType: store>(
+    public fun init_stake_config<TokenType: copy+drop+store>(
         sender: &signer,
         rate: u128,
         period: u64
     ) {
         let config = new_StakeConfig<TokenType>(rate, period);
-        Config::publish_new_config<PositionConfig<PT>>(sender, config);
+        Config::publish_new_config<StakeConfig<TokenType>>(sender, config);
     }
 
-    public fun get_stake_config<TokenType: store> (): (u128, u64) {
+    public fun get_stake_config<TokenType: copy+drop+store> (): (u128, u64) {
         let config = Config::get_by_address<StakeConfig<TokenType>>(Admin::admin_address());
         return (
             *&config.reward_rate,
@@ -115,12 +115,12 @@ module Config {
         )
     }
 
-    public fun update_stake_config<TokenType: store> (
+    public fun update_stake_config<TokenType: copy+drop+store> (
         sender: &signer,
         rate: u128,
         period: u64
     ) {
-        Config::set<StakeConfig<TokenType>>(sender, StakeConfig<Tokentype> {
+        Config::set<StakeConfig<TokenType>>(sender, StakeConfig<TokenType> {
             reward_rate: rate,
             rebase_period: period
         });

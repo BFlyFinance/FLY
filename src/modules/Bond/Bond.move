@@ -2,6 +2,8 @@ address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
 module Bond {
 
     use 0x1::Token;
+    use 0x1::Signer;
+    use 0x1::Account;
     use 0x1::Timestamp;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::FLY;
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
@@ -20,7 +22,7 @@ module Bond {
     }
 
     struct Bond<TokenType: store> has key, store {
-        token: Token<FLY::FLY>,
+        token: Token::Token<FLY::FLY>,
         payout: u128,
         price_paid: u128,
         start_time: u64,
@@ -28,14 +30,24 @@ module Bond {
         vesting: u64
     }
 
-    public fun initialize<TokenType: store>(address: &signer) {
-
+    struct MintCap has key, store {
+        cap: Treasury::SharedMintCap
     }
 
-    public fun deposit<TokenType: store>(sender: &signer, amount: u128, max_price: u128)acquires Info, Bond {
+    public fun initialize(sender: &signer) {
+        let mint_cap = Treasury::get_mint_cap(sender);
+        move_to(sender, MintCap {cap: mint_cap});
+    }
+    public fun initialize_bond<TokenType: copy+drop+store>(sender: &signer) {
+        Admin::is_admin(sender);
+        move_to(sender, Info<TokenType>{total_debt: 0, last_update_time: Timestamp::now_milliseconds()});
+    }
+
+    public fun deposit<TokenType: copy+drop+store>(sender: &signer, amount: u128, max_price: u128)
+    acquires Info, Bond, MintCap {
         let admin_address = Admin::admin_address();
-        decayDebt();
-        let (control_var, minimum_price, max_payout, fee, max_debt, vesting_term)
+        decay_debt<TokenType>();
+        let (_, _, _, fee, max_debt, vesting_term)
             = Config::get_bond_config<TokenType>();
         // check sender token amount
         assert(Account::balance<TokenType>(Signer::address_of(sender)) >= amount, INSUFFICIENT_AMOUNT);
@@ -44,34 +56,35 @@ module Bond {
         assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
         // check price
         let native_price = bond_price<TokenType>();
+        let price = ExponentialU256::mantissa_to_u128(copy native_price);
         assert(ExponentialU256::greater_than_exp(ExponentialU256::exp_direct(max_price), native_price), SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
         let payout = payout_for<TokenType>(value);
         let dao_fee = TreasuryHelper::fee_calc(copy payout, fee);
-        let profit = TreasuryHelper::profit_calc(copy value, copy payout, copy dao_fee);
+//        let profit = TreasuryHelper::profit_calc(copy value, copy payout, copy dao_fee);
         // check payout too small (0.01)
         // check payout bigger than max_payout
-        Treasury::deposit<TokenType>(amount);
-        Treasury::deposit_dao_fee(fee);
+        Treasury::deposit<TokenType>(sender, amount);
+        let mint_cap = borrow_global<MintCap>(admin_address);
+        Treasury::deposit_dao_fee_with_cap(dao_fee, &mint_cap.cap);
+        let info = borrow_global_mut<Info<TokenType>>(admin_address);
+        info.total_debt = info.total_debt + value;
         // mint Voucher for user
-        create_voucher(sender, amount, price, vesting_term);
+        create_voucher<TokenType>(sender, amount, price, (vesting_term as u64));
 
 
 
     }
 
-    public fun redeem<TokenType: store>(sender: &signer) acquires Bond, Info {
-        let admin_address = Admin::admin_address();
-        let percent = percent_vested_for(Signer::address_of(sender));
-        let voucher = borrow_global_mut<Bond<TokenType>>(Singer::address_of(sender));
-        let balance = Token::value<FLY::FLY>(voucher.token);
-        let info = borrow_global_mut<Info<TokenType>>(admin_address);
-        if (ExponentialU256::equal_exp(percent, ExponentialU256::exp(1, 1))) {
+    public fun redeem<TokenType: copy+drop+store>(sender: &signer) acquires Bond {
+        let percent = percent_vested_for<TokenType>(Signer::address_of(sender));
+        let voucher = borrow_global_mut<Bond<TokenType>>(Signer::address_of(sender));
+        let balance = Token::value<FLY::FLY>(&voucher.token);
+        if (ExponentialU256::equal_exp(copy percent, ExponentialU256::exp(1, 1))) {
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, balance);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
-            info.total_debt = info.total_debt + balance;
         } else {
-            let amount_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(bond.payout), percent);
+            let amount_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(voucher.payout), percent);
             let amount = ExponentialU256::mantissa_to_u128(amount_exp);
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, amount);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
@@ -79,11 +92,13 @@ module Bond {
         voucher.last_time = Timestamp::now_milliseconds();
     }
 
-    fun create_voucher<TokenType: store>(sender: &signer, amount: u128, price: u128, vesting: u64)acquires Bond {
-        let tokens = Treasury::mint_bond_token_with_cap();
-        if (exists<Bond<TokenType>>(address)) {
+    fun create_voucher<TokenType: copy+drop+store>(sender: &signer, amount: u128, price: u128, vesting: u64)
+    acquires Bond, MintCap {
+        let mint_cap = borrow_global<MintCap>(Admin::admin_address());
+        let tokens = Treasury::mint_bond_token_with_cap(amount, &mint_cap.cap);
+        if (exists<Bond<TokenType>>(Signer::address_of(sender))) {
             let voucher = borrow_global_mut<Bond<TokenType>>(Signer::address_of(sender));
-            voucher.amount = voucher.amount + amount;
+            voucher.payout = voucher.payout + amount;
             voucher.price_paid = price;
             voucher.start_time = Timestamp::now_milliseconds();
             voucher.last_time = Timestamp::now_milliseconds();
@@ -96,7 +111,7 @@ module Bond {
                 start_time: Timestamp::now_milliseconds(),
                 last_time: Timestamp::now_milliseconds(),
                 vesting: vesting,
-                token: Token::zero()
+                token: Token::zero<FLY::FLY>()
             };
             Token::deposit<FLY::FLY>(&mut voucher.token, tokens);
             move_to(sender, voucher);
@@ -104,38 +119,42 @@ module Bond {
 
     }
 
-    fun payout_for<TokenType: store>(value: u128): u128 {
+    fun payout_for<TokenType: copy+drop+store>(value: u128): u128 acquires Info{
         let token_price = bond_price<TokenType>();
         let amount_exp = ExponentialU256::div_exp(ExponentialU256::exp_direct(value), token_price);
         ExponentialU256::mantissa_to_u128(amount_exp)
     }
 
-    public fun percent_vested_for<TokenType: store>(address: address): Exp acquires Bond {
+    public fun percent_vested_for<TokenType: copy+drop+store>(address: address): Exp acquires Bond {
         let bond = borrow_global<Bond<TokenType>>(address);
         let time_now = Timestamp::now_milliseconds();
         let percent = (time_now - bond.start_time) / bond.vesting;
         if (percent > 1) {
             ExponentialU256::exp(1, 1)
         } else {
-            ExponentialU256::exp((time_now - bond.last_time) as u128, bond.vesting as u128)
+            let time_delta = time_now - bond.start_time;
+            ExponentialU256::exp((time_delta as u128), (bond.vesting as u128))
         }
     }
 
-    public fun bond_price<TokenType> (): Exp acquires Info{
-        let bcv_debt_ratio = ExponentialU256::mul_exp(ExponentialU256::exp(bcv, 1) * debtRatio<TokenType>());
+    public fun bond_price<TokenType: copy+drop+store> (): Exp acquires Info{
+        let (bcv, _, _, _, _, _)
+        = Config::get_bond_config<TokenType>();
+        let bcv_debt_ratio = ExponentialU256::mul_exp(ExponentialU256::exp(bcv, 1), debt_ratio<TokenType>());
         ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp(1, 1))
     }
 
-    public fun debt_ratio<TokenType: store>(): Exp acquires Info {
+    public fun debt_ratio<TokenType: copy+drop+store>(): Exp acquires Info {
         let admin_address = Admin::admin_address();
         let decay_debt = debt_decay<TokenType>();
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         let debt = info.total_debt - decay_debt;
-        let FLY_amount = Token::market_cap<FLY::FLY>();
-        ExponentialU256::exp(debt, FLY_amount)
+
+        let fly_amount = Token::market_cap<FLY::FLY>();
+        ExponentialU256::exp(debt, fly_amount)
     }
 
-    fun decay_debt<TokenType: store>() acquires Info {
+    fun decay_debt<TokenType: drop+copy+store>() acquires Info {
         let decay_amount = debt_decay<TokenType>();
         let admin_address = Admin::admin_address();
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
@@ -143,13 +162,14 @@ module Bond {
         info.last_update_time = Timestamp::now_milliseconds();
     }
 
-    fun debt_decay<TokenType: store>(): u128 acquires Info {
+    fun debt_decay<TokenType: drop+copy+store>(): u128 acquires Info {
         let admin_address = Admin::admin_address();
         let info = borrow_global<Info<TokenType>>(admin_address);
         let time_now = Timestamp::now_milliseconds();
         let (_, _, _, _, _, vesting_term)
             = Config::get_bond_config<TokenType>();
-        let decay_percent = ExponentialU256::exp((time_now - info.last_update_time) as u128, vesting_term as u128);
+        let time_delta = time_now - info.last_update_time;
+        let decay_percent = ExponentialU256::exp((time_delta as u128), (vesting_term as u128));
         let decay_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(info.total_debt), decay_percent);
         let decay_ = ExponentialU256::mantissa_to_u128(decay_exp);
         if (decay_ > info.total_debt) {
@@ -157,6 +177,5 @@ module Bond {
         };
         decay_
     }
-
 }
 }
