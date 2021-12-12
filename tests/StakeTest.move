@@ -97,9 +97,48 @@ address alie = {{alice}};
 script {
     use 0xb987F1aB0D7879b2aB421b98f96eFb44::Stake;
 
-    fun init_bond_stake() {
-        Stake::rebase();
-//        Stake::stake(&signer, 5000000000u128);
+    fun stake(signer: signer) {
+        Stake::stake(&signer, 5000000000u128);
+    }
+}
+// check: EXECUTED
+
+//! new-transaction
+//! sender: alice
+address alie = {{alice}};
+script {
+    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Stake;
+
+    fun stake(signer: signer) {
+        Stake::forfeit(&signer);
+    }
+}
+// check: EXECUTED
+
+//! new-transaction
+//! sender: alice
+address alie = {{alice}};
+script {
+    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Stake;
+
+    fun stake(signer: signer) {
+        Stake::stake(&signer, 5000000000u128);
+    }
+}
+// check: EXECUTED
+
+//! block-prologue
+//! author: genesis
+//! block-number: 3
+//! block-time: 1631445104293
+//! new-transaction
+//! sender: alice
+address alie = {{alice}};
+script {
+    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Stake;
+
+    fun calim() {
+        Stake::claim();
     }
 }
 // check: EXECUTED

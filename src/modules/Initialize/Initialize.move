@@ -34,6 +34,7 @@ module Initialize {
 
     fun initialize_stake(sender: &signer) {
         Stake::initialize(sender);
+        Config::init_stake_config<FLY::FLY>(sender, 1000000000000000000u128, 432000u64);
     }
 
     fun initialize_config(sender: &signer) {

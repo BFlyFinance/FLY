@@ -41,10 +41,11 @@ module Stake {
         move_to(sender, Pool {
             token: Token::zero<FLY::FLY>(),
             index: 1u128,
-            last_update_time: Timestamp::now_milliseconds()
+            last_update_time: Timestamp::now_seconds()
         });
         let mint_cap = Treasury::get_mint_cap(sender);
         move_to(sender, MintCap {cap: mint_cap});
+        move_to(sender, Warmup {token: Token::zero<FLY::FLY>(), expires: Timestamp::now_seconds()});
 
     }
 
@@ -62,12 +63,11 @@ module Stake {
     }
 
     // retrieve fly from warmup
-    public fun claim() acquires Warmup, Pool, MintCap {
-        let time_now = Timestamp::now_milliseconds();
+    public fun claim() acquires Warmup, Pool{
+        let time_now = Timestamp::now_seconds();
         let admin_address = Admin::admin_address();
         let warmup = borrow_global<Warmup>(admin_address);
         if (warmup.expires <= time_now) {
-            rebase();
             // retrieve FLY into Pool
             let warmup = borrow_global_mut<Warmup>(admin_address);
             let pool = borrow_global_mut<Pool>(admin_address);
@@ -87,8 +87,8 @@ module Stake {
         let admin_address = Admin::admin_address();
         let address = Signer::address_of(sender);
         let s_fly = borrow_global_mut<SFLY>(address);
-        let time_now = Timestamp::now_milliseconds();
-        if (s_fly.warmup_amount > 0 && s_fly.warmup_expires < time_now) {
+        let time_now = Timestamp::now_seconds();
+        if (s_fly.warmup_amount > 0 && s_fly.warmup_expires > time_now) {
             let warmup = borrow_global_mut<Warmup>(admin_address);
             // send FLY to sender
             let token = Token::withdraw(&mut warmup.token, s_fly.warmup_amount);
@@ -136,22 +136,24 @@ module Stake {
         let reward = TreasuryHelper::reward(pool_index, user_index, amount);
         s_fly.amount = s_fly.amount + reward;
         s_fly.index = pool_index;
-        s_fly.index_last_update = Timestamp::now_milliseconds();
+        s_fly.index_last_update = Timestamp::now_seconds();
     }
 
     public fun rebase() acquires Pool, MintCap, Warmup {
-        let time_now = Timestamp::now_milliseconds();
+        let time_now = Timestamp::now_seconds();
         let pool = borrow_global_mut<Pool>(Admin::admin_address());
+        let stake_amount = Token::value<FLY::FLY>(&pool.token);
         let (reward_rate, rebase_period) = Config::get_stake_config<FLY::FLY>();
         let next_rebase_at = pool.last_update_time + rebase_period;
-        if (next_rebase_at <= time_now) {
+        if (stake_amount != 0 && next_rebase_at <= time_now) {
             // mint reward fly into Pool
             let admin_address = Admin::admin_address();
             let mint_cap = borrow_global<MintCap>(admin_address);
             let token = Treasury::mint_reward_with_cap(reward_rate, &mint_cap.cap);
             let reward_amount = Token::value<FLY::FLY>(&token);
-            let stake_amount = Token::value<FLY::FLY>(&pool.token);
             // rebase index
+            0x1::Debug::print(&reward_amount);
+            0x1::Debug::print(&stake_amount);
             let new_index = TreasuryHelper::new_index(pool.index, reward_amount, stake_amount);
             pool.index = new_index;
             // update next rebase time
