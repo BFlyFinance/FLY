@@ -1,16 +1,16 @@
-address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
+address 0xC137657E5aeD5099592BA07c8ab44CC5 {
 module TreasuryHelper{
 
     use 0x1::STC;
     use 0x1::Math;
     use 0x1::Token;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::FLY;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::FAI;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Admin;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::ExponentialU256;
-    use 0x3db7a2da7444995338a2413b151ee437::TokenSwap::{Self};
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::FAI;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Admin;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
+    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap::{Self};
 
-    public fun value_of<TokenType: store> (amount: u128): u128 {
+    public fun value_of<TokenType: drop+copy+store> (amount: u128): u128 {
         if (Admin::is_reserve<TokenType>()) {
             amount * Token::scaling_factor<FLY::FLY>() / Token::scaling_factor<TokenType>()
         } else {
@@ -34,7 +34,7 @@ module TreasuryHelper{
         value - payout - dao_fee
     }
 
-    public fun markdown<Token_x: store, Token_y: store>(): u128 {
+    public fun markdown<Token_x: store+drop+copy, Token_y: store+drop+copy>(): u128 {
         // TODO: calc
         let fly_decimal = Token::scaling_factor<FLY::FLY>();
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
@@ -45,18 +45,18 @@ module TreasuryHelper{
         }
     }
 
-    fun get_total_value<Token_x: store, Token_y: store>(): u128 {
+    fun get_total_value<Token_x: store+copy+drop, Token_y: store+copy+drop>(): u128 {
         let k_value = get_k_value<Token_x, Token_y>();
         2 * (Math::sqrt(k_value) as u128)
     }
 
-    fun valuation<Token_x: store, Token_y: store>(amount: u128): u128 {
+    fun valuation<Token_x: store+drop+copy, Token_y: store+drop+copy>(amount: u128): u128 {
         let total_value = get_total_value<Token_x, Token_y>();
         let total_amount = Token::market_cap<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         total_value * (amount / total_amount)
     }
 
-    fun get_k_value<Token_x: store, Token_y: store>(): u128{
+    fun get_k_value<Token_x: store+drop+copy, Token_y: store+drop+copy>(): u128{
         let p_decimals = Token::scaling_factor<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
         reserve_x * reserve_y / p_decimals

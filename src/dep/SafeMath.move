@@ -1,4 +1,4 @@
-address 0x3db7a2da7444995338a2413b151ee437 {
+address 0x4783d08fb16990bd35d83f3e23bf93b8 {
 module SafeMath {
     use 0x1::Math;
     use 0x1::Errors;
@@ -19,8 +19,8 @@ module SafeMath {
 //    const MUL_DIV_OVERFLOW_U128: u64 = 1003;
 
     /// support 18-bit or larger precision token
-    public fun safe_mul_div(x: u128, y: u128, z: u128): u128 {
-        let r_u256 = mul_div_u256(x, y ,z);
+    public fun safe_mul_div_u128(x: u128, y: u128, z: u128): u128 {
+        let r_u256 = mul_div_u128(x, y ,z);
 
         let u128_max = U256::from_u128(U128_MAX);
         let cmp_order = U256::compare(&r_u256, &u128_max);
@@ -30,7 +30,7 @@ module SafeMath {
         U256::to_u128(&r_u256)
     }
 
-    public fun mul_div_u256(x: u128, y: u128, z: u128): U256 {
+    public fun mul_div_u128(x: u128, y: u128, z: u128): U256 {
         if ( z == 0) {
             abort Errors::invalid_argument(ERR_DIVIDE_BY_ZERO)
         };
@@ -46,7 +46,7 @@ module SafeMath {
     }
 
     #[test]
-    public fun test_safe_mul_div() {
+    public fun test_safe_mul_div_u128() {
         let x: u128 = 9446744073709551615;
         let y: u128 = 1009855555;
         let z: u128 = 3979;
@@ -54,31 +54,31 @@ module SafeMath {
 //        Decimal(9446744073709551615)*Decimal(1009855555)/Decimal(3979)
 //        Decimal('2397548876476230247541334.839')
         let _r_expected:u128 = 2397548876476230247541334;
-        let r = Self::safe_mul_div(x, y, z);
+        let r = Self::safe_mul_div_u128(x, y, z);
         assert(r == _r_expected, 3001);
     }
 
     #[test]
     #[expected_failure]
-    public fun test_safe_mul_div_overflow() {
+    public fun test_safe_mul_div_u128_overflow() {
         let x: u128 = 240282366920938463463374607431768211455;
         let y: u128 = 1009855555;
         let z: u128 = 3979;
 
         let _r_expected:u128 = 9539846979498919717765120;
-        let r = Self::safe_mul_div(x, y, z);
+        let r = Self::safe_mul_div_u128(x, y, z);
         assert(r == _r_expected, 3002);
     }
 
 
     /// support 18-bit or larger precision token
-    public fun safe_compare_u256(x1: u128, y1: u128, x2: u128, y2: u128): u8 {
+    public fun safe_compare_mul_u128(x1: u128, y1: u128, x2: u128, y2: u128): u8 {
         let r1 = U256::mul(U256::from_u128(x1), U256::from_u128(y1));
         let r2 = U256::mul(U256::from_u128(x2), U256::from_u128(y2));
         U256::compare(&r1, &r2)
     }
 
-    public fun mul_u256(x: u128, y: u128): U256 {
+    public fun mul_u128(x: u128, y: u128): U256 {
         U256::mul(U256::from_u128(x), U256::from_u128(y))
     }
 
@@ -112,7 +112,7 @@ module SafeMath {
 //        (Decimal(90282366920938463463374607431768211455)*Decimal(1009855555)).sqrt()
 //        Decimal('301947263199483152960157.5789842310747215103252658913180283305935')
         let _r_expected:u128 = 301947263199483152960157;
-        let r = Self::sqrt_u256(Self::mul_u256(x, y));
+        let r = Self::sqrt_u256(Self::mul_u128(x, y));
         assert(r == _r_expected, 3003);
     }
 
@@ -123,7 +123,7 @@ module SafeMath {
         assert(r == _r_expected, 3004);
     }
 
-    public fun get_safe_u128(x: U256): u128 {
+    public fun to_safe_u128(x: U256): u128 {
         let u128_max = U256::from_u128(U128_MAX);
         let cmp_order = U256::compare(&x, &u128_max);
         if (cmp_order == GREATER_THAN) {
@@ -132,4 +132,5 @@ module SafeMath {
         U256::to_u128(&x)
     }
 }
+
 }

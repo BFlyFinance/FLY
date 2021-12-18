@@ -1,9 +1,9 @@
-address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
+address 0xC137657E5aeD5099592BA07c8ab44CC5 {
 module InitializeTest {
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Initialize;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::TestHelper;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Initialize;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::TestHelper;
 
-    #[test(sender = @0xb987F1aB0D7879b2aB421b98f96eFb44)]
+    #[test(sender = @0xC137657E5aeD5099592BA07c8ab44CC5)]
     public fun initialize_treasury_test(sender: signer) {
         TestHelper::before_test();
         Initialize::initialize_bond_stake(&sender);

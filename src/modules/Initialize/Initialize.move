@@ -1,13 +1,13 @@
-address 0xb987F1aB0D7879b2aB421b98f96eFb44 {
+address 0xC137657E5aeD5099592BA07c8ab44CC5 {
 module Initialize {
     use 0x1::STC;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::FAI;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::FLY;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Bond;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Stake;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Config;
-    use 0xb987F1aB0D7879b2aB421b98f96eFb44::Treasury;
-    use 0x3db7a2da7444995338a2413b151ee437::TokenSwap;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::FAI;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Bond;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Stake;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Config;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Treasury;
+    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
 
     public fun initialize_bond_stake(sender: &signer) {
         initialize_bond(sender);
