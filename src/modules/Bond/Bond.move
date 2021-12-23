@@ -7,8 +7,10 @@ module Bond {
     use 0x1::Timestamp;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Admin;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Price;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Config;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Treasury;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::PriceOracle;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::TreasuryHelper;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256::{Self, Exp};
 
@@ -49,31 +51,21 @@ module Bond {
         decay_debt<TokenType>();
         let (_, _, _, fee, max_debt, vesting_term)
             = Config::get_bond_config<TokenType>();
-        // check sender token amount
         assert(Account::balance<TokenType>(Signer::address_of(sender)) >= amount, INSUFFICIENT_AMOUNT);
-        // check max debt
         let info = borrow_global<Info<TokenType>>(admin_address);
         assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
-        // check price
         let native_price = bond_price<TokenType>();
         let price = ExponentialU256::mantissa_to_u128(copy native_price);
         assert(ExponentialU256::greater_than_exp(ExponentialU256::exp_direct(max_price), native_price), SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
         let payout = payout_for<TokenType>(value);
         let dao_fee = TreasuryHelper::fee_calc(copy payout, fee);
-//        let profit = TreasuryHelper::profit_calc(copy value, copy payout, copy dao_fee);
-        // check payout too small (0.01)
-        // check payout bigger than max_payout
         Treasury::deposit<TokenType>(sender, amount);
         let mint_cap = borrow_global<MintCap>(admin_address);
         Treasury::deposit_dao_fee_with_cap(dao_fee, &mint_cap.cap);
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         info.total_debt = info.total_debt + value;
-        // mint Voucher for user
         create_voucher<TokenType>(sender, amount, price, (vesting_term as u64));
-
-
-
     }
 
     public fun redeem<TokenType: copy+drop+store>(sender: &signer) acquires Bond {
@@ -116,7 +108,6 @@ module Bond {
             Token::deposit<FLY::FLY>(&mut voucher.token, tokens);
             move_to(sender, voucher);
         }
-
     }
 
     fun payout_for<TokenType: copy+drop+store>(value: u128): u128 acquires Info{
@@ -142,6 +133,15 @@ module Bond {
         = Config::get_bond_config<TokenType>();
         let bcv_debt_ratio = ExponentialU256::mul_exp(ExponentialU256::exp(bcv, 1), debt_ratio<TokenType>());
         ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp(1, 1))
+    }
+
+    public fun bond_price_usd<TokenType: copy+drop+store>(): u128 acquires Info {
+        let native_price_exp = bond_price<TokenType>();
+        let token_price = PriceOracle::usdt_price<TokenType>();
+        let (price, dec) = Price::unpack(token_price);
+        let native_price_exp_mul_price = ExponentialU256::mul_scalar_exp(native_price_exp, price);
+        let bond_price_usd_exp = ExponentialU256::div_scalar_exp(native_price_exp_mul_price, dec);
+        ExponentialU256::mantissa_to_u128(bond_price_usd_exp)
     }
 
     public fun debt_ratio<TokenType: copy+drop+store>(): Exp acquires Info {
