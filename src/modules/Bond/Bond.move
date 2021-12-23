@@ -118,7 +118,7 @@ module Bond {
         ExponentialU256::truncate_to_u128(amount_exp)
     }
 
-    public fun percent_vested_for<TokenType: copy+drop+store>(address: address): Exp acquires Bond {
+    fun percent_vested_for<TokenType: copy+drop+store>(address: address): Exp acquires Bond {
         let bond = borrow_global<Bond<TokenType>>(address);
         let time_now = Timestamp::now_seconds();
         let percent = (time_now - bond.start_time) / bond.vesting;
@@ -128,6 +128,11 @@ module Bond {
             let time_delta = time_now - bond.start_time;
             ExponentialU256::exp((time_delta as u128), (bond.vesting as u128))
         }
+    }
+
+    public fun percent_vested<TokenType: copy+drop+store>(address: address): u128 acquires Bond {
+        let percent_exp = percent_vested_for<TokenType>(address);
+        ExponentialU256::mantissa_to_u128(percent_exp)
     }
 
     public fun bond_price<TokenType: copy+drop+store> (): Exp acquires Info{
@@ -151,10 +156,7 @@ module Bond {
         let decay_debt = debt_decay<TokenType>();
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         let debt = info.total_debt - decay_debt;
-        0x1::Debug::print(&111111111);
-        0x1::Debug::print(&debt);
         let fly_amount = Token::market_cap<FLY::FLY>();
-        0x1::Debug::print(&fly_amount);
         ExponentialU256::exp(debt, fly_amount)
     }
 

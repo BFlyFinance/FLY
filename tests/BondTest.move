@@ -72,10 +72,14 @@ script {
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
+    use 0x1::STC;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Config;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Initialize;
 
     fun init_bond_stake(signer: signer) {
         Initialize::initialize_bond_stake(&signer);
+        Config::update_bond_config<STC::STC>(&signer, 1000u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
+
     }
 }
 // check: EXECUTED
@@ -89,14 +93,9 @@ script {
     use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
 
     fun deposit_stc_bond(signer: signer) {
-        let debt_ratio = Bond::debt_ratio<STC::STC>();
-        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(debt_ratio));
         Bond::deposit<STC::STC>(&signer, 1000000u128, 100000000000000000000u128);
-        let debt_ratio = Bond::debt_ratio<STC::STC>();
         let bond_price = Bond::bond_price<STC::STC>();
-        0x1::Debug::print(&12345678);
-        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(debt_ratio));
-        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(bond_price));
+        assert(ExponentialU256::mantissa_to_u128(bond_price) == 1000099999980000000, 1);
     }
 }
 // check: EXECUTED
