@@ -152,8 +152,6 @@ module Stake {
             let token = Treasury::mint_reward_with_cap(reward_rate, &mint_cap.cap);
             let reward_amount = Token::value<FLY::FLY>(&token);
             // rebase index
-            0x1::Debug::print(&reward_amount);
-            0x1::Debug::print(&stake_amount);
             let new_index = TreasuryHelper::new_index(pool.index, reward_amount, stake_amount);
             pool.index = new_index;
             // update next rebase time

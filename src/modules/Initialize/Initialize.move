@@ -34,14 +34,14 @@ module Initialize {
 
     fun initialize_stake(sender: &signer) {
         Stake::initialize(sender);
-        Config::init_stake_config<FLY::FLY>(sender, 1000000000000000000u128, 432000u64);
+        Config::init_stake_config<FLY::FLY>(sender, 100000000000000000u128, 432000u64);
     }
 
     fun initialize_config(sender: &signer) {
-        Config::init_bond_config<FAI::FAI>(sender, 2500u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 100000000u128);
-        Config::init_bond_config<STC::STC>(sender, 890u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 100000000u128);
-        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender, 8060u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 100000000u128);
-        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender, 205u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 100000000u128);
+        Config::init_bond_config<FAI::FAI>(sender, 2500u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
+        Config::init_bond_config<STC::STC>(sender, 890u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
+        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender, 8060u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
+        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender, 205u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
     }
 
 }

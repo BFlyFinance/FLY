@@ -20,6 +20,7 @@ module Bond {
 
     struct Info<TokenType: store> has key {
         total_debt: u128,
+        total_purchased: u128,
         last_update_time: u64,
     }
 
@@ -42,7 +43,7 @@ module Bond {
     }
     public fun initialize_bond<TokenType: copy+drop+store>(sender: &signer) {
         Admin::is_admin(sender);
-        move_to(sender, Info<TokenType>{total_debt: 0, last_update_time: Timestamp::now_milliseconds()});
+        move_to(sender, Info<TokenType>{total_debt: 0, total_purchased: 0, last_update_time: Timestamp::now_seconds()});
     }
 
     public fun deposit<TokenType: copy+drop+store>(sender: &signer, amount: u128, max_price: u128)
@@ -65,6 +66,7 @@ module Bond {
         Treasury::deposit_dao_fee_with_cap(dao_fee, &mint_cap.cap);
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         info.total_debt = info.total_debt + value;
+        info.total_purchased = info.total_purchased + amount;
         create_voucher<TokenType>(sender, amount, price, (vesting_term as u64));
     }
 
@@ -81,7 +83,7 @@ module Bond {
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, amount);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
         };
-        voucher.last_time = Timestamp::now_milliseconds();
+        voucher.last_time = Timestamp::now_seconds();
     }
 
     fun create_voucher<TokenType: copy+drop+store>(sender: &signer, amount: u128, price: u128, vesting: u64)
@@ -92,16 +94,16 @@ module Bond {
             let voucher = borrow_global_mut<Bond<TokenType>>(Signer::address_of(sender));
             voucher.payout = voucher.payout + amount;
             voucher.price_paid = price;
-            voucher.start_time = Timestamp::now_milliseconds();
-            voucher.last_time = Timestamp::now_milliseconds();
+            voucher.start_time = Timestamp::now_seconds();
+            voucher.last_time = Timestamp::now_seconds();
             voucher.vesting = vesting;
             Token::deposit<FLY::FLY>(&mut voucher.token, tokens);
         } else {
             let voucher = Bond<TokenType> {
                 payout: amount,
                 price_paid: price,
-                start_time: Timestamp::now_milliseconds(),
-                last_time: Timestamp::now_milliseconds(),
+                start_time: Timestamp::now_seconds(),
+                last_time: Timestamp::now_seconds(),
                 vesting: vesting,
                 token: Token::zero<FLY::FLY>()
             };
@@ -112,13 +114,13 @@ module Bond {
 
     fun payout_for<TokenType: copy+drop+store>(value: u128): u128 acquires Info{
         let token_price = bond_price<TokenType>();
-        let amount_exp = ExponentialU256::div_exp(ExponentialU256::exp_direct(value), token_price);
-        ExponentialU256::mantissa_to_u128(amount_exp)
+        let amount_exp = ExponentialU256::div_exp(ExponentialU256::exp(value, 1), token_price);
+        ExponentialU256::truncate_to_u128(amount_exp)
     }
 
     public fun percent_vested_for<TokenType: copy+drop+store>(address: address): Exp acquires Bond {
         let bond = borrow_global<Bond<TokenType>>(address);
-        let time_now = Timestamp::now_milliseconds();
+        let time_now = Timestamp::now_seconds();
         let percent = (time_now - bond.start_time) / bond.vesting;
         if (percent > 1) {
             ExponentialU256::exp(1, 1)
@@ -149,8 +151,10 @@ module Bond {
         let decay_debt = debt_decay<TokenType>();
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         let debt = info.total_debt - decay_debt;
-
+        0x1::Debug::print(&111111111);
+        0x1::Debug::print(&debt);
         let fly_amount = Token::market_cap<FLY::FLY>();
+        0x1::Debug::print(&fly_amount);
         ExponentialU256::exp(debt, fly_amount)
     }
 
@@ -159,13 +163,13 @@ module Bond {
         let admin_address = Admin::admin_address();
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         info.total_debt = info.total_debt - decay_amount;
-        info.last_update_time = Timestamp::now_milliseconds();
+        info.last_update_time = Timestamp::now_seconds();
     }
 
     fun debt_decay<TokenType: drop+copy+store>(): u128 acquires Info {
         let admin_address = Admin::admin_address();
         let info = borrow_global<Info<TokenType>>(admin_address);
-        let time_now = Timestamp::now_milliseconds();
+        let time_now = Timestamp::now_seconds();
         let (_, _, _, _, _, vesting_term)
             = Config::get_bond_config<TokenType>();
         let time_delta = time_now - info.last_update_time;

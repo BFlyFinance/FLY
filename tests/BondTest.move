@@ -9,7 +9,7 @@
 //! block-prologue
 //! author: genesis
 //! block-number: 1
-//! block-time: 1631244104293
+//! block-time: 1631244204293
 //! new-transaction
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
@@ -86,11 +86,17 @@ address alice = {{alice}};
 script {
     use 0x1::STC;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Bond;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
 
     fun deposit_stc_bond(signer: signer) {
+        let debt_ratio = Bond::debt_ratio<STC::STC>();
+        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(debt_ratio));
         Bond::deposit<STC::STC>(&signer, 1000000u128, 100000000000000000000u128);
         let debt_ratio = Bond::debt_ratio<STC::STC>();
-        0x1::Debug::print(&debt_ratio);
+        let bond_price = Bond::bond_price<STC::STC>();
+        0x1::Debug::print(&12345678);
+        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(debt_ratio));
+        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(bond_price));
     }
 }
 // check: EXECUTED
@@ -105,12 +111,13 @@ address alice = {{alice}};
 script {
     use 0x1::STC;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Bond;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
 
     fun redeem_stc_bond(signer: signer) {
         let price = Bond::bond_price<STC::STC>();
         let debt_ratio = Bond::debt_ratio<STC::STC>();
-        0x1::Debug::print(&price);
-        0x1::Debug::print(&debt_ratio);
+        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(price));
+        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(debt_ratio));
         Bond::redeem<STC::STC>(&signer);
     }
 }

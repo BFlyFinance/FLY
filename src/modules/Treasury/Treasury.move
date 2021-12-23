@@ -6,6 +6,7 @@ module Treasury {
     use 0x1::Token::{Self, Token};
     use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Admin;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
 
     const INVALID_ADDRESS: u64 = 1;
     const INVALID_AMOUNT: u64 = 2;
@@ -89,9 +90,9 @@ module Treasury {
         let admin_address = Admin::admin_address();
         let cap = borrow_global<FLYMintCap>(admin_address);
         let total_fly = Token::market_cap<FLY::FLY>();
-        // TODO: calc
-        let reward = total_fly * reward_rate;
-        // mint fly with cap
+        let reward_rate_exp = ExponentialU256::exp_direct(reward_rate);
+        let reward_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(total_fly), reward_rate_exp);
+        let reward = ExponentialU256::mantissa_to_u128(reward_exp);
         FLY::mint_with_cap(reward, &cap.cap)
     }
 

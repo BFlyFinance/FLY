@@ -137,7 +137,7 @@ module ExponentialU256 {
         U256::div(*&exp.mantissa, U256::from_u128(EXP_SCALE))
     }
 
-    public fun truncate_to_128(exp: Exp): u128 {
+    public fun truncate_to_u128(exp: Exp): u128 {
         let ret = U256::div(*&exp.mantissa, U256::from_u128(EXP_SCALE));
         U256::to_u128(&ret)
     }

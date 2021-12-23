@@ -60,7 +60,7 @@ module TreasuryHelper{
         let total_value = get_total_value<Token_x, Token_y>();
         let total_amount = Token::market_cap<TokenSwap::LiquidityToken<Token_x, Token_y>>();
         let value_exp = ExponentialU256::exp(total_value * amount, total_amount);
-        ExponentialU256::truncate_to_128(value_exp)
+        ExponentialU256::truncate_to_u128(value_exp)
     }
 
     fun get_k_value<Token_x: store+drop+copy, Token_y: store+drop+copy>(): u128{

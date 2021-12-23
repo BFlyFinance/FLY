@@ -79,10 +79,14 @@ script {
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Config;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Initialize;
 
     fun init_bond_stake(signer: signer) {
         Initialize::initialize_bond_stake(&signer);
+        Config::update_stake_config<FLY::FLY>(&signer, 100000000000000000u128, 432000u64);
+
     }
 }
 // check: EXECUTED
@@ -130,7 +134,7 @@ script {
 //! block-prologue
 //! author: genesis
 //! block-number: 3
-//! block-time: 1631445104293
+//! block-time: 1631845104293
 //! new-transaction
 //! sender: alice
 address alie = {{alice}};
@@ -139,6 +143,10 @@ script {
 
     fun calim() {
         Stake::claim();
+        Stake::rebase();
+        let index = Stake::index();
+        assert(index == 201, 1);
+
     }
 }
 // check: EXECUTED
