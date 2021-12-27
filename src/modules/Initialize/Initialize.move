@@ -1,6 +1,9 @@
 address 0xC137657E5aeD5099592BA07c8ab44CC5 {
 module Initialize {
     use 0x1::STC;
+    use 0x1::Signer;
+    use 0x1::PriceOracle;
+    use 0x1::STCUSDOracle::{STCUSD};
     use 0xC137657E5aeD5099592BA07c8ab44CC5::FAI;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Bond;
@@ -44,5 +47,11 @@ module Initialize {
         Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender, 205u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
     }
 
+    public fun init_oracle(sender: &signer) {
+        if (!PriceOracle::is_data_source_initialized<STCUSD>(Signer::address_of(sender))) {
+            //STCUSDOracle::register(sender);
+            PriceOracle::init_data_source<STCUSD>(sender, 152800);
+        };
+    }
 }
 }

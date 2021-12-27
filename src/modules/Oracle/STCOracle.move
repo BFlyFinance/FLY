@@ -26,7 +26,7 @@ module STCOracle {
         if (!Admin::is_dev()) {
             return @0x07fa08a855753f0ff7292fdcbe871216
         };
-        return @0x82e35b34096f32c42061717c06e44a59
+        return @0xC137657E5aeD5099592BA07c8ab44CC5
     }
 }
 }

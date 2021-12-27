@@ -111,7 +111,12 @@ module Stake {
         Token::deposit<FLY::FLY>(&mut warmup.token, token);
         init_sfly(sender);
         let s_fly = borrow_global_mut<SFLY>(Signer::address_of(sender));
-        s_fly.warmup_amount = amount;
+        let time_now = Timestamp::now_seconds();
+        if (time_now >= s_fly.warmup_expires) {
+            s_fly.amount = s_fly.amount + s_fly.warmup_amount;
+            s_fly.warmup_amount = 0;
+        };
+        s_fly.warmup_amount = s_fly.warmup_amount + amount;
         // set warmup expires
         s_fly.warmup_expires = warmup.expires;
     }
@@ -171,10 +176,8 @@ module Stake {
 //        let time_now = Timestamp::now_seconds();
         let pool = borrow_global_mut<Pool>(Admin::admin_address());
         let stake_amount = Token::value<FLY::FLY>(&pool.token);
-        0x1::Debug::print(&stake_amount);
         let (reward_rate, _) = Config::get_stake_config<FLY::FLY>();
         let reward_amount_exp = TreasuryHelper::next_reward_exp(reward_rate);
-        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(copy reward_amount_exp));
         let next_reward_ratio_exp = ExponentialU256::div_exp(reward_amount_exp, ExponentialU256::exp_direct(stake_amount));
         ExponentialU256::mantissa_to_u128(next_reward_ratio_exp)
 

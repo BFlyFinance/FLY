@@ -14,10 +14,12 @@
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::Initialize;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::TokenMock::{Self, FAI};
 
     fun token_init(signer: signer) {
         TokenMock::register_token<FAI>(&signer, 9u8);
+        Initialize::init_oracle(&signer);
     }
 }
 
