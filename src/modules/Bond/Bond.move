@@ -16,7 +16,7 @@ module Bond {
 
     const INSUFFICIENT_AMOUNT: u64 = 1;
     const EXCEEDS_MAX_AMOUNT: u64 = 2;
-    const SLIPPAGE_LIMIT: u64 = 2;
+    const SLIPPAGE_LIMIT: u64 = 3;
 
     struct Info<TokenType: store> has key {
         total_debt: u128,
@@ -56,8 +56,10 @@ module Bond {
         let info = borrow_global<Info<TokenType>>(admin_address);
         assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
         let native_price = bond_price<TokenType>();
+//        let usd_price = bond_price_usd<TokenType>();
         let price = ExponentialU256::mantissa_to_u128(copy native_price);
         assert(ExponentialU256::greater_than_exp(ExponentialU256::exp_direct(max_price), native_price), SLIPPAGE_LIMIT);
+//        assert(max_price >= usd_price, SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
         let payout = payout_for<TokenType>(value);
         let dao_fee = TreasuryHelper::fee_calc(copy payout, fee);

@@ -110,7 +110,6 @@ module Treasury {
         let admin_address = Admin::admin_address();
         let cap = borrow_global<FLYMintCap>(admin_address);
         FLY::mint_with_cap(amount, &cap.cap)
-
     }
 
 

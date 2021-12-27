@@ -7,7 +7,7 @@ module TreasuryHelper{
     use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::FAI;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Admin;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256::{Self, Exp};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap::{Self};
 
     public fun value_of<TokenType: drop+copy+store> (amount: u128): u128 {
@@ -87,6 +87,12 @@ module TreasuryHelper{
         let total_exp = ExponentialU256::div_exp(amount_exp_mul_pool_index_exp, user_index_exp);
         let total = ExponentialU256::mantissa_to_u128(total_exp);
         total - amount
+    }
+
+    public fun next_reward_exp(reward_rate: u128): Exp {
+        let total_fly = Token::market_cap<FLY::FLY>();
+        let reward_rate_exp = ExponentialU256::exp_direct(reward_rate);
+        ExponentialU256::mul_exp(ExponentialU256::exp_direct(total_fly), reward_rate_exp)
     }
 }
 }

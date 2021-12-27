@@ -10,6 +10,7 @@ module Stake {
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Config;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::Treasury;
     use 0xC137657E5aeD5099592BA07c8ab44CC5::TreasuryHelper;
+    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256;
 
     const INSUFFICIENT_AMOUNT: u64 = 1;
 
@@ -164,6 +165,19 @@ module Stake {
     public fun index(): u128 acquires Pool {
         let pool = borrow_global<Pool>(Admin::admin_address());
         pool.index
+    }
+
+    public fun next_reward_ratio(): u128 acquires Pool {
+//        let time_now = Timestamp::now_seconds();
+        let pool = borrow_global_mut<Pool>(Admin::admin_address());
+        let stake_amount = Token::value<FLY::FLY>(&pool.token);
+        0x1::Debug::print(&stake_amount);
+        let (reward_rate, _) = Config::get_stake_config<FLY::FLY>();
+        let reward_amount_exp = TreasuryHelper::next_reward_exp(reward_rate);
+        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(copy reward_amount_exp));
+        let next_reward_ratio_exp = ExponentialU256::div_exp(reward_amount_exp, ExponentialU256::exp_direct(stake_amount));
+        ExponentialU256::mantissa_to_u128(next_reward_ratio_exp)
+
     }
 }
 }

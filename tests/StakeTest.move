@@ -144,9 +144,8 @@ script {
     fun calim() {
         Stake::claim();
         Stake::rebase();
-        let index = Stake::index();
-        assert(index == 201, 1);
-
+        let next_reward_ratio = Stake::next_reward_ratio();
+        assert(next_reward_ratio == 1094527363184079601, 1);
     }
 }
 // check: EXECUTED
