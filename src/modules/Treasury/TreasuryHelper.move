@@ -1,13 +1,13 @@
-address 0xC137657E5aeD5099592BA07c8ab44CC5 {
+address 0x164FbB953f822FBBA95d582B1794687C {
 module TreasuryHelper{
 
     use 0x1::STC;
     use 0x1::Math;
     use 0x1::Token;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::FAI;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Admin;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::ExponentialU256::{Self, Exp};
+    use 0x164FbB953f822FBBA95d582B1794687C::FLY;
+    use 0x164FbB953f822FBBA95d582B1794687C::FAI;
+    use 0x164FbB953f822FBBA95d582B1794687C::Admin;
+    use 0x164FbB953f822FBBA95d582B1794687C::ExponentialU256::{Self, Exp};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap::{Self};
 
     public fun value_of<TokenType: drop+copy+store> (amount: u128): u128 {

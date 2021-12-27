@@ -3,7 +3,7 @@ module CommonHelper {
     use 0x1::Token;
     use 0x1::Account;
     use 0x1::Signer;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::TokenMock;
+    use 0x164FbB953f822FBBA95d582B1794687C::TokenMock;
 
 
     const PRECISION_9: u8 = 9;

@@ -1,15 +1,15 @@
-address 0xC137657E5aeD5099592BA07c8ab44CC5 {
+address 0x164FbB953f822FBBA95d582B1794687C {
 module Initialize {
     use 0x1::STC;
     use 0x1::Signer;
     use 0x1::PriceOracle;
     use 0x1::STCUSDOracle::{STCUSD};
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::FAI;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::FLY;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Bond;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Stake;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Config;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Treasury;
+    use 0x164FbB953f822FBBA95d582B1794687C::FAI;
+    use 0x164FbB953f822FBBA95d582B1794687C::FLY;
+    use 0x164FbB953f822FBBA95d582B1794687C::Bond;
+    use 0x164FbB953f822FBBA95d582B1794687C::Stake;
+    use 0x164FbB953f822FBBA95d582B1794687C::Config;
+    use 0x164FbB953f822FBBA95d582B1794687C::Treasury;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
 
     public fun initialize_bond_stake(sender: &signer) {
@@ -37,14 +37,45 @@ module Initialize {
 
     fun initialize_stake(sender: &signer) {
         Stake::initialize(sender);
-        Config::init_stake_config<FLY::FLY>(sender, 100000000000000000u128, 432000u64);
+        Config::init_stake_config<FLY::FLY>(sender,
+            100000000000000000u128,
+            28800u64
+        );
     }
 
     fun initialize_config(sender: &signer) {
-        Config::init_bond_config<FAI::FAI>(sender, 2500u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
-        Config::init_bond_config<STC::STC>(sender, 890u128, 1u128, 10000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
-        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender, 8060u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
-        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender, 205u128, 1u128, 100000000u128, 1000000000000000000u128, 10000000000000u128, 10000u128);
+        Config::init_bond_config<FAI::FAI>(sender,
+            2500u128,
+            1u128,
+            10000000u128,
+            1000000000000000000u128,
+            10000000000000u128,
+            432000u128
+        );
+        Config::init_bond_config<STC::STC>(sender,
+            890u128,
+            1u128,
+            10000000u128,
+            1000000000000000000u128,
+            10000000000000u128,
+            432000u128
+        );
+        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender,
+            8060u128,
+            1u128,
+            100000000u128,
+            1000000000000000000u128,
+            10000000000000u128,
+            432000u128
+        );
+        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender,
+            205u128,
+            1u128,
+            100000000u128,
+            1000000000000000000u128,
+            10000000000000u128,
+            432000u128
+        );
     }
 
     public fun init_oracle(sender: &signer) {

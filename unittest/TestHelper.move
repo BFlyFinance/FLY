@@ -1,4 +1,4 @@
-address 0xC137657E5aeD5099592BA07c8ab44CC5 {
+address 0x164FbB953f822FBBA95d582B1794687C {
 module TestHelper {
     use 0x1::Token;
     use 0x1::Account;
@@ -8,8 +8,8 @@ module TestHelper {
     use 0x1::NFT;
     use 0x1::ChainId;
     use 0x1::Oracle;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Admin;
-    use 0xC137657E5aeD5099592BA07c8ab44CC5::Initialize;
+    use 0x164FbB953f822FBBA95d582B1794687C::Admin;
+    use 0x164FbB953f822FBBA95d582B1794687C::Initialize;
 
     struct GenesisSignerCapability has key {
         cap: Account::SignerCapability,
