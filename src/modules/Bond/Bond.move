@@ -164,6 +164,9 @@ module Bond {
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         let debt = info.total_debt - decay_debt;
         let fly_amount = Token::market_cap<FLY::FLY>();
+        if (fly_amount == 0u128) {
+            return ExponentialU256::exp_direct(0u128)
+        };
         ExponentialU256::exp(debt, fly_amount)
     }
 
