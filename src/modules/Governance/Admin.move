@@ -22,7 +22,7 @@ module Admin {
 
     public fun is_dev(): bool {
         let id = ChainId::get();
-        id == 254 || id == 255
+        id == 252 || id == 254 || id == 255
     }
 
     public fun is_main(): bool {

@@ -39,5 +39,9 @@ module InitializeScript {
     public(script) fun initialize_bond_stake(account: signer) {
         Initialize::initialize_bond_stake(&account);
     }
+
+    public(script) fun init_oracle(account: signer) {
+        Initialize::init_oracle(&account);
+    }
 }
 }
