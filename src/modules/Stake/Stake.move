@@ -183,7 +183,6 @@ module Stake {
         let reward_amount_exp = TreasuryHelper::next_reward_exp(reward_rate);
         let next_reward_ratio_exp = ExponentialU256::div_exp(reward_amount_exp, ExponentialU256::exp_direct(stake_amount));
         ExponentialU256::mantissa_to_u128(next_reward_ratio_exp)
-
     }
 }
 }

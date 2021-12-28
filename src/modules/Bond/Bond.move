@@ -138,10 +138,15 @@ module Bond {
     }
 
     public fun bond_price<TokenType: copy+drop+store> (): Exp acquires Info{
-        let (bcv, _, _, _, _, _)
+        let (bcv, minimum_price, _, _, _, _)
         = Config::get_bond_config<TokenType>();
         let bcv_debt_ratio = ExponentialU256::mul_exp(ExponentialU256::exp(bcv, 1), debt_ratio<TokenType>());
-        ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp(1, 1))
+        let minimum_price_exp = ExponentialU256::exp_direct(minimum_price);
+        let bond_price_exp = ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp(1, 1));
+        if (ExponentialU256::greater_than_exp(copy minimum_price_exp, copy bond_price_exp)) {
+            bond_price_exp = minimum_price_exp;
+        };
+        bond_price_exp
     }
 
     public fun bond_price_usd<TokenType: copy+drop+store>(): u128 acquires Info {
