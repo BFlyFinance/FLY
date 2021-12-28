@@ -55,7 +55,7 @@ module Stake {
         if (!exists<SFLY>(address)) {
             move_to(sender, SFLY{
                 amount: 0u128,
-                warmup_amount: 0128,
+                warmup_amount: 0u128,
                 warmup_expires: 0u64,
                 index: 1u128,
                 index_last_update: 0u64
