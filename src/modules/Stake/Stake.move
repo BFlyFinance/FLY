@@ -177,6 +177,9 @@ module Stake {
         let pool = borrow_global_mut<Pool>(Admin::admin_address());
         let stake_amount = Token::value<FLY::FLY>(&pool.token);
         let (reward_rate, _) = Config::get_stake_config<FLY::FLY>();
+        if (stake_amount == 0u128) {
+            return 0u128
+        };
         let reward_amount_exp = TreasuryHelper::next_reward_exp(reward_rate);
         let next_reward_ratio_exp = ExponentialU256::div_exp(reward_amount_exp, ExponentialU256::exp_direct(stake_amount));
         ExponentialU256::mantissa_to_u128(next_reward_ratio_exp)
