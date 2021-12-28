@@ -85,6 +85,15 @@ module Treasury {
         FLY::burn_with_cap(token_to_burn, &fly_burn_cap.cap);
     }
 
+    public fun withdraw_dao(sender: &signer, amount: u128) acquires Dao {
+        let admin_address = Admin::admin_address();
+        assert(admin_address == Signer::address_of(sender), INVALID_ADDRESS);
+        let dao = borrow_global_mut<Dao>(admin_address);
+        assert(Token::value<FLY::FLY>(&dao.token) >= amount, INVALID_AMOUNT);
+        let token_to_withdraw = Token::withdraw<FLY::FLY>(&mut dao.token, amount);
+        Account::deposit_to_self<FLY::FLY>(sender, token_to_withdraw);
+    }
+
     public fun mint_reward_with_cap(reward_rate: u128, cap: &SharedMintCap): Token<FLY::FLY> acquires FLYMintCap {
         let _ = cap;
         let admin_address = Admin::admin_address();
