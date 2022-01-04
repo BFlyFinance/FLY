@@ -50,14 +50,16 @@ module Stake {
 
     }
 
-    fun init_sfly(sender: &signer) {
+    fun init_sfly(sender: &signer) acquires Pool {
         let address = Signer::address_of(sender);
+        let admin_address = Admin::admin_address();
+        let pool = borrow_global<Pool>(admin_address);
         if (!exists<SFLY>(address)) {
             move_to(sender, SFLY{
                 amount: 0u128,
                 warmup_amount: 0u128,
                 warmup_expires: 0u64,
-                index: 1000000000000000000u128,
+                index: *&pool.index,
                 index_last_update: 0u64
             });
         }
@@ -110,12 +112,8 @@ module Stake {
         let warmup = borrow_global_mut<Warmup>(admin_address);
         Token::deposit<FLY::FLY>(&mut warmup.token, token);
         init_sfly(sender);
+        fresh(Signer::address_of(sender));
         let s_fly = borrow_global_mut<SFLY>(Signer::address_of(sender));
-        let time_now = Timestamp::now_seconds();
-        if (time_now >= s_fly.warmup_expires) {
-            s_fly.amount = s_fly.amount + s_fly.warmup_amount;
-            s_fly.warmup_amount = 0;
-        };
         s_fly.warmup_amount = s_fly.warmup_amount + amount;
         // set warmup expires
         s_fly.warmup_expires = warmup.expires;
@@ -127,6 +125,7 @@ module Stake {
         fresh(Signer::address_of(sender));
         let s_fly = borrow_global_mut<SFLY>(Signer::address_of(sender));
         assert(amount <= s_fly.amount, INSUFFICIENT_AMOUNT);
+        0x1::Debug::print(&s_fly.amount);
         s_fly.amount = s_fly.amount - amount;
         let pool = borrow_global_mut<Pool>(Admin::admin_address());
         let tokens = Token::withdraw<FLY::FLY>(&mut pool.token, amount);
@@ -137,12 +136,19 @@ module Stake {
         let pool = borrow_global<Pool>(Admin::admin_address());
         let pool_index = *&pool.index;
         let s_fly = borrow_global_mut<SFLY>(copy address);
+        let time_now = Timestamp::now_seconds();
+        if (time_now >= s_fly.warmup_expires) {
+            s_fly.amount = s_fly.amount + s_fly.warmup_amount;
+            s_fly.warmup_amount = 0;
+        };
         let user_index = *&s_fly.index;
-        let amount = *&s_fly.amount;
-        let reward = TreasuryHelper::reward(pool_index, user_index, amount);
-        s_fly.amount = s_fly.amount + reward;
-        s_fly.index = pool_index;
-        s_fly.index_last_update = Timestamp::now_seconds();
+        if (user_index != pool_index) {
+            let amount = *&s_fly.amount;
+            let reward = TreasuryHelper::reward(pool_index, user_index, amount);
+            s_fly.amount = s_fly.amount + reward;
+            s_fly.index = pool_index;
+            s_fly.index_last_update = Timestamp::now_seconds();
+        };
     }
 
     public fun rebase() acquires Pool, MintCap, Warmup {

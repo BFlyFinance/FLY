@@ -147,7 +147,24 @@ script {
         Stake::claim();
         Stake::rebase();
         let next_reward_ratio = Stake::next_reward_ratio();
+//        0x1::Debug::print(&next_reward_ratio);
         assert(next_reward_ratio == 1094527363184079601, 1);
+    }
+}
+// check: EXECUTED
+//
+//! block-prologue
+//! author: genesis
+//! block-number: 4
+//! block-time: 1632845104293
+//! new-transaction
+//! sender: alice
+address alie = {{alice}};
+script {
+    use 0x164FbB953f822FBBA95d582B1794687C::Stake;
+
+    fun unstake(signer: signer) {
+        Stake::unstake(&signer, 5000000000u128);
     }
 }
 // check: EXECUTED
