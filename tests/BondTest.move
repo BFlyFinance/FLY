@@ -95,7 +95,7 @@ script {
     use 0x164FbB953f822FBBA95d582B1794687C::ExponentialU256;
 
     fun deposit_stc_bond(signer: signer) {
-        Bond::deposit<STC::STC>(&signer, 1000000u128, 100000000000000000000u128);
+        Bond::deposit<STC::STC>(&signer, 1000000u128, 152800000000000000u128);
         let bond_price = Bond::bond_price<STC::STC>();
         assert(ExponentialU256::mantissa_to_u128(bond_price) == 1000099999980000000, 1);
     }

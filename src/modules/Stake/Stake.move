@@ -41,7 +41,7 @@ module Stake {
         Admin::is_admin(sender);  
         move_to(sender, Pool {
             token: Token::zero<FLY::FLY>(),
-            index: 1u128,
+            index: 1000000000000000000u128,
             last_update_time: Timestamp::now_seconds()
         });
         let mint_cap = Treasury::get_mint_cap(sender);
@@ -57,7 +57,7 @@ module Stake {
                 amount: 0u128,
                 warmup_amount: 0u128,
                 warmup_expires: 0u64,
-                index: 1u128,
+                index: 1000000000000000000u128,
                 index_last_update: 0u64
             });
         }
