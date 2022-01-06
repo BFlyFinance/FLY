@@ -87,6 +87,7 @@ module Stake {
     public fun forfeit(sender: &signer) acquires SFLY, Warmup, Pool, MintCap {
         rebase();
         claim();
+        fresh(Signer::address_of(sender));
         let admin_address = Admin::admin_address();
         let address = Signer::address_of(sender);
         let s_fly = borrow_global_mut<SFLY>(address);
