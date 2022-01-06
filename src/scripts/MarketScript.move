@@ -2,6 +2,7 @@ address 0x7231Eb1A18d8711336B21f6106697253 {
 module MarketScript {
     use 0x7231Eb1A18d8711336B21f6106697253::Bond;
     use 0x7231Eb1A18d8711336B21f6106697253::Stake;
+    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
 
     public(script) fun buy_bond<TokenType: copy+drop+store>(sender: signer, amount: u128, max_price: u128) {
         Bond::deposit<TokenType>(&sender, amount, max_price);
@@ -29,7 +30,9 @@ module MarketScript {
         Stake::forfeit(&sender);
     }
 
-
-
+    public(script) fun debt_ratio<TokenType: copy+drop+store>(): u128 {
+        let debt_ratio_exp = Bond::debt_ratio<TokenType>();
+        ExponentialU256::mantissa_to_u128(debt_ratio_exp)
+    }
 }
 }
