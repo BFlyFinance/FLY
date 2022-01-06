@@ -1,23 +1,23 @@
-address 0x164FbB953f822FBBA95d582B1794687C {
+address 0x7231Eb1A18d8711336B21f6106697253 {
 module Admin {
 
     use 0x1::STC;
     use 0x1::Signer;
     use 0x1::ChainId;
     use 0x1::Token::{Self};
-    use 0x164FbB953f822FBBA95d582B1794687C::FLY;
-    use 0x164FbB953f822FBBA95d582B1794687C::FAI;
+    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
+    use 0x7231Eb1A18d8711336B21f6106697253::FAI;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
 
     const INVALID_ADDRESS: u64 = 1;
     const INVALID_TOKENTYPE: u64 = 2;
 
     public fun admin_address(): address {
-        @0x164FbB953f822FBBA95d582B1794687C
+        @0x7231Eb1A18d8711336B21f6106697253
     }
 
     public fun is_admin(sender: &signer) {
-        assert(Signer::address_of(sender) == @0x164FbB953f822FBBA95d582B1794687C, INVALID_ADDRESS );
+        assert(Signer::address_of(sender) == @0x7231Eb1A18d8711336B21f6106697253, INVALID_ADDRESS );
     }
 
     public fun is_dev(): bool {

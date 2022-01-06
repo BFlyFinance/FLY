@@ -1,7 +1,7 @@
-address 0x164FbB953f822FBBA95d582B1794687C {
+address 0x7231Eb1A18d8711336B21f6106697253 {
 module Config {
     use 0x1::Config;
-    use 0x164FbB953f822FBBA95d582B1794687C::Admin;
+    use 0x7231Eb1A18d8711336B21f6106697253::Admin;
 
     struct BondConfig<TokenType> has copy, store, drop {
         control_var: u128,

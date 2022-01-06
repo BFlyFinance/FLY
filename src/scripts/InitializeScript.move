@@ -1,12 +1,12 @@
-address 0x164FbB953f822FBBA95d582B1794687C {
+address 0x7231Eb1A18d8711336B21f6106697253 {
 module InitializeScript {
 
-    use 0x164FbB953f822FBBA95d582B1794687C::TokenMock::{Self, FAI};
+    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{Self, FAI};
     use 0x1::STC::STC;
     use 0x1::Signer;
     use 0x1::Account;
-    use 0x164FbB953f822FBBA95d582B1794687C::FLY::{FLY};
-    use 0x164FbB953f822FBBA95d582B1794687C::Initialize;
+    use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
+    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
 
 

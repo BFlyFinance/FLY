@@ -1,12 +1,12 @@
-address 0x164FbB953f822FBBA95d582B1794687C {
+address 0x7231Eb1A18d8711336B21f6106697253 {
 module STCOracle {
 
     use 0x1::STC::STC;
     use 0x1::STCUSDOracle::{STCUSD};
     use 0x1::PriceOracle;
-    use 0x164FbB953f822FBBA95d582B1794687C::Price ;
-    use 0x164FbB953f822FBBA95d582B1794687C::Admin ;
-    use 0x164FbB953f822FBBA95d582B1794687C::ExponentialU256::{Self, Exp};
+    use 0x7231Eb1A18d8711336B21f6106697253::Price ;
+    use 0x7231Eb1A18d8711336B21f6106697253::Admin ;
+    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256::{Self, Exp};
     //0.2
     public fun usdt_price(): Price::PriceNumber {
         let oracle_address = oracle_address<STC>();
@@ -26,7 +26,7 @@ module STCOracle {
         if (!Admin::is_dev()) {
             return @0x07fa08a855753f0ff7292fdcbe871216
         };
-        return @0x164FbB953f822FBBA95d582B1794687C
+        return @0x7231Eb1A18d8711336B21f6106697253
     }
 }
 }

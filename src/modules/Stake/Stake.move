@@ -1,16 +1,16 @@
-address 0x164FbB953f822FBBA95d582B1794687C {
+address 0x7231Eb1A18d8711336B21f6106697253 {
 module Stake {
 
     use 0x1::Token;
     use 0x1::Signer;
     use 0x1::Account;
     use 0x1::Timestamp;
-    use 0x164FbB953f822FBBA95d582B1794687C::FLY;
-    use 0x164FbB953f822FBBA95d582B1794687C::Admin;
-    use 0x164FbB953f822FBBA95d582B1794687C::Config;
-    use 0x164FbB953f822FBBA95d582B1794687C::Treasury;
-    use 0x164FbB953f822FBBA95d582B1794687C::TreasuryHelper;
-    use 0x164FbB953f822FBBA95d582B1794687C::ExponentialU256;
+    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
+    use 0x7231Eb1A18d8711336B21f6106697253::Admin;
+    use 0x7231Eb1A18d8711336B21f6106697253::Config;
+    use 0x7231Eb1A18d8711336B21f6106697253::Treasury;
+    use 0x7231Eb1A18d8711336B21f6106697253::TreasuryHelper;
+    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
 
     const INSUFFICIENT_AMOUNT: u64 = 1;
 
@@ -101,7 +101,7 @@ module Stake {
         };
     }
 
-    public fun stake(sender: &signer, amount: u128)acquires Warmup, SFLY, Pool, MintCap {
+    public fun stake(sender: &signer, amount: u128) acquires Warmup, SFLY, Pool, MintCap {
         rebase();
         claim();
         // check sender have enough amount
@@ -125,7 +125,6 @@ module Stake {
         fresh(Signer::address_of(sender));
         let s_fly = borrow_global_mut<SFLY>(Signer::address_of(sender));
         assert(amount <= s_fly.amount, INSUFFICIENT_AMOUNT);
-        0x1::Debug::print(&s_fly.amount);
         s_fly.amount = s_fly.amount - amount;
         let pool = borrow_global_mut<Pool>(Admin::admin_address());
         let tokens = Token::withdraw<FLY::FLY>(&mut pool.token, amount);

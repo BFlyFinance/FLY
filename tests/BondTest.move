@@ -3,7 +3,7 @@
 //! account: feeadmin, 0xd231d9da8e37fc3d9ff3f576cf978535
 //! account: exchanger, 100000 0x1::STC::STC
 //! account: alice, 10000000000 0x1::STC::STC
-//! account: flyadmin, 0x164FbB953f822FBBA95d582B1794687C, 1000000000000000000 0x1::STC::STC
+//! account: flyadmin, 0x7231Eb1A18d8711336B21f6106697253, 1000000000000000000 0x1::STC::STC
 
 
 //! block-prologue
@@ -14,8 +14,8 @@
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
-    use 0x164FbB953f822FBBA95d582B1794687C::Initialize;
-    use 0x164FbB953f822FBBA95d582B1794687C::TokenMock::{Self, FAI};
+    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
+    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{Self, FAI};
 
     fun token_init(signer: signer) {
         TokenMock::register_token<FAI>(&signer, 9u8);
@@ -29,7 +29,7 @@ script {
 //! sender: alice
 address alice = {{alice}};
 script {
-    use 0x164FbB953f822FBBA95d582B1794687C::TokenMock::{FAI};
+    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::CommonHelper;
 
     fun init_account(signer: signer) {
@@ -42,7 +42,7 @@ script {
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
-    use 0x164FbB953f822FBBA95d582B1794687C::Initialize;
+    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
 
     fun init_account(signer: signer) {
         Initialize::initialize_treasury(&signer);
@@ -55,8 +55,8 @@ script {
 address admin = {{admin}};
 script {
     use 0x1::STC::STC;
-    use 0x164FbB953f822FBBA95d582B1794687C::FLY::{FLY};
-    use 0x164FbB953f822FBBA95d582B1794687C::TokenMock::{FAI};
+    use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
+    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
 
     fun register_token_pair(signer: signer) {
@@ -75,8 +75,8 @@ script {
 address flyadmin = {{flyadmin}};
 script {
     use 0x1::STC;
-    use 0x164FbB953f822FBBA95d582B1794687C::Config;
-    use 0x164FbB953f822FBBA95d582B1794687C::Initialize;
+    use 0x7231Eb1A18d8711336B21f6106697253::Config;
+    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
 
     fun init_bond_stake(signer: signer) {
         Initialize::initialize_bond_stake(&signer);
@@ -91,8 +91,8 @@ script {
 address alice = {{alice}};
 script {
     use 0x1::STC;
-    use 0x164FbB953f822FBBA95d582B1794687C::Bond;
-    use 0x164FbB953f822FBBA95d582B1794687C::ExponentialU256;
+    use 0x7231Eb1A18d8711336B21f6106697253::Bond;
+    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
 
     fun deposit_stc_bond(signer: signer) {
         Bond::deposit<STC::STC>(&signer, 1000000u128, 152800000000000000u128);
@@ -111,8 +111,8 @@ script {
 address alice = {{alice}};
 script {
     use 0x1::STC;
-    use 0x164FbB953f822FBBA95d582B1794687C::Bond;
-    use 0x164FbB953f822FBBA95d582B1794687C::ExponentialU256;
+    use 0x7231Eb1A18d8711336B21f6106697253::Bond;
+    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
 
     fun redeem_stc_bond(signer: signer) {
         let price = Bond::bond_price<STC::STC>();
