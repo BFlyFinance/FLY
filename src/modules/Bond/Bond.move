@@ -122,12 +122,12 @@ module Bond {
     fun percent_vested_for<TokenType: copy+drop+store>(address: address): Exp acquires Bond {
         let bond = borrow_global<Bond<TokenType>>(address);
         let time_now = Timestamp::now_seconds();
-        let percent = (time_now - bond.start_time) / bond.vesting;
-        if (percent > 1) {
+        let time_delta = (time_now - bond.last_time as u128);
+        let percent_exp = ExponentialU256::exp(time_delta, (bond.vesting as u128));
+        if (ExponentialU256::greater_than_exp(percent_exp, ExponentialU256::exp(1, 1))) {
             ExponentialU256::exp(1, 1)
         } else {
-            let time_delta = time_now - bond.start_time;
-            ExponentialU256::exp((time_delta as u128), (bond.vesting as u128))
+            ExponentialU256::exp(time_delta, (bond.vesting as u128))
         }
     }
 
