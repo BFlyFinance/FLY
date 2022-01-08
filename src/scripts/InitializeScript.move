@@ -1,13 +1,14 @@
 address 0x7231Eb1A18d8711336B21f6106697253 {
 module InitializeScript {
 
-    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{Self, FAI};
     use 0x1::STC::STC;
     use 0x1::Signer;
     use 0x1::Account;
+    use 0x7231Eb1A18d8711336B21f6106697253::FAIMock;
     use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
     use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
+    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{Self, FAI};
 
 
     public(script) fun safe_mint<TokenType: store>(account: signer, token_amount: u128) {
@@ -42,6 +43,10 @@ module InitializeScript {
 
     public(script) fun init_oracle(account: signer) {
         Initialize::init_oracle(&account);
+    }
+
+    public(script) fun init_fai(account: signer) {
+        FAIMock::initialize(&account);
     }
 }
 }
