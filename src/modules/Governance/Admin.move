@@ -6,7 +6,7 @@ module Admin {
     use 0x1::ChainId;
     use 0x1::Token::{Self};
     use 0x7231Eb1A18d8711336B21f6106697253::FLY;
-    use 0x7231Eb1A18d8711336B21f6106697253::FAI;
+    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
 
     const INVALID_ADDRESS: u64 = 1;
@@ -32,7 +32,7 @@ module Admin {
 
     public fun is_barnard(): bool {
         let id = ChainId::get();
-        id == 253
+        id == 251
     }
 
     public fun is_reserve<TokenType: store>(): bool {

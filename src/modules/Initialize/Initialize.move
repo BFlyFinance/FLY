@@ -4,7 +4,7 @@ module Initialize {
     use 0x1::Signer;
     use 0x1::PriceOracle;
     use 0x1::STCUSDOracle::{STCUSD};
-    use 0x7231Eb1A18d8711336B21f6106697253::FAI;
+    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
     use 0x7231Eb1A18d8711336B21f6106697253::FLY;
     use 0x7231Eb1A18d8711336B21f6106697253::Bond;
     use 0x7231Eb1A18d8711336B21f6106697253::Stake;

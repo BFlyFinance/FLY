@@ -1,9 +1,9 @@
-address 0x7231Eb1A18d8711336B21f6106697253 {
+address 0xfe125d419811297dfab03c61efec0bc9 {
 module FAIMock {
     use 0x1::Token;
     use 0x1::Signer;
     use 0x1::Account;
-    use 0x7231Eb1A18d8711336B21f6106697253::FAI::{Self, FAI};
+    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{Self, FAI};
 
     struct SharedMintCapability has key, store {
         cap: Token::MintCapability<FAI::FAI>,

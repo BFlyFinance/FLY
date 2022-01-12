@@ -4,26 +4,37 @@
 //! account: exchanger, 100000 0x1::STC::STC
 //! account: alice, 10000000000 0x1::STC::STC
 //! account: flyadmin, 0x7231Eb1A18d8711336B21f6106697253, 1000000000000000000 0x1::STC::STC
+//! account: faiadmin, 0xfe125d419811297dfab03c61efec0bc9, 1000000000000000000 0x1::STC::STC
 
 
 //! block-prologue
 //! author: genesis
 //! block-number: 1
-//! block-time: 1631244104293
+//! block-time: 1631244204293
+//! new-transaction
+//! sender: faiadmin
+address faiadmin = {{faiadmin}};
+    script {
+        use 0xfe125d419811297dfab03c61efec0bc9::TokenMock::{Self, FAI};
+
+        fun token_init(signer: signer) {
+            TokenMock::register_token<FAI>(&signer, 9u8);
+    }
+}
+// check: EXECUTED
+
 //! new-transaction
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
     use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
-    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{Self, FAI};
 
-    fun token_init(signer: signer) {
-        TokenMock::register_token<FAI>(&signer, 9u8);
+    fun init_account(signer: signer) {
         Initialize::init_oracle(&signer);
     }
 }
-
 // check: EXECUTED
+
 
 //! new-transaction
 //! sender: alice
@@ -31,7 +42,7 @@ address alice = {{alice}};
 script {
     use 0x1::Account;
     use 0x7231Eb1A18d8711336B21f6106697253::FLY;
-    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{FAI};
+    use 0xfe125d419811297dfab03c61efec0bc9::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::CommonHelper;
 
     fun init_account(signer: signer) {
@@ -63,7 +74,7 @@ address admin = {{admin}};
 script {
     use 0x1::STC::STC;
     use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
-    use 0x7231Eb1A18d8711336B21f6106697253::TokenMock::{FAI};
+    use 0xfe125d419811297dfab03c61efec0bc9::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
 
     fun register_token_pair(signer: signer) {

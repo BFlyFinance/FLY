@@ -4,11 +4,11 @@ module PriceOracle {
     use 0x1::Token;
     use 0x1::STC;
     use 0x1::Errors;
-    use 0x7231Eb1A18d8711336B21f6106697253::FAI;
     use 0x7231Eb1A18d8711336B21f6106697253::Price;
     use 0x7231Eb1A18d8711336B21f6106697253::Admin;
     use 0x7231Eb1A18d8711336B21f6106697253::STCOracle;
     use 0x7231Eb1A18d8711336B21f6106697253::FAIOracle;
+    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
 
     const NOT_SUPPROT_TOKEN_TYPE: u64 = 1;
 
