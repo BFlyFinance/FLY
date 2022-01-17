@@ -23,7 +23,7 @@ module Initialize {
         Treasury::initialize_pool<STC::STC>(sender);
         Treasury::initialize_pool<FAI::FAI>(sender);
         Treasury::initialize_pool<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender);
-        Treasury::initialize_pool<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender);
+        Treasury::initialize_pool<TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>(sender);
 
     }
 
@@ -32,7 +32,7 @@ module Initialize {
         Bond::initialize_bond<FAI::FAI>(sender);
         Bond::initialize_bond<STC::STC>(sender);
         Bond::initialize_bond<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender);
-        Bond::initialize_bond<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender);
+        Bond::initialize_bond<TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>(sender);
     }
 
     fun initialize_stake(sender: &signer) {
@@ -68,7 +68,7 @@ module Initialize {
             10000000000000u128,
             432000u128
         );
-        Config::init_bond_config<TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>(sender,
+        Config::init_bond_config<TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>(sender,
             205u128,
             1u128,
             100000000u128,

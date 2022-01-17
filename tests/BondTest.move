@@ -2,7 +2,7 @@
 //! account: feetokenholder, 0x9350502a3af6c617e9a42fa9e306a385, 400000 0x1::STC::STC
 //! account: feeadmin, 0xd231d9da8e37fc3d9ff3f576cf978535
 //! account: exchanger, 100000 0x1::STC::STC
-//! account: alice, 10000000000 0x1::STC::STC
+//! account: alice, 10000000000000 0x1::STC::STC
 //! account: flyadmin, 0x7231Eb1A18d8711336B21f6106697253, 1000000000000000000 0x1::STC::STC
 //! account: faiadmin, 0xfe125d419811297dfab03c61efec0bc9, 1000000000000000000 0x1::STC::STC
 
@@ -39,11 +39,14 @@ script {
 //! sender: alice
 address alice = {{alice}};
 script {
+    use 0x1::Account;
     use 0xfe125d419811297dfab03c61efec0bc9::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::CommonHelper;
+    use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
 
-    fun init_account(signer: signer) {
+fun init_account(signer: signer) {
         CommonHelper::safe_mint<FAI>(&signer, 6000000000000u128);
+        Account::do_accept_token<FLY>(&signer);
     }
 }
 // check: EXECUTED
@@ -51,11 +54,15 @@ script {
 //! new-transaction
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
+address alice = {{alice}};
 script {
+    use 0x1::Account;
     use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
+    use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
 
     fun init_account(signer: signer) {
         Initialize::initialize_treasury(&signer);
+        Account::pay_from<FLY>(&signer, @alice, 1000000000000u128);
     }
 }
 // check: EXECUTED
@@ -122,13 +129,8 @@ address alice = {{alice}};
 script {
     use 0x1::STC;
     use 0x7231Eb1A18d8711336B21f6106697253::Bond;
-    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
 
     fun redeem_stc_bond(signer: signer) {
-        let price = Bond::bond_price<STC::STC>();
-        let debt_ratio = Bond::debt_ratio<STC::STC>();
-        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(price));
-        0x1::Debug::print(&ExponentialU256::mantissa_to_u128(debt_ratio));
         Bond::redeem<STC::STC>(&signer);
     }
 }

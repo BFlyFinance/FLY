@@ -1,15 +1,18 @@
 address 0x7231Eb1A18d8711336B21f6106697253 {
 module Bond {
 
+    use 0x1::STC;
     use 0x1::Token;
     use 0x1::Signer;
     use 0x1::Account;
     use 0x1::Timestamp;
+    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
     use 0x7231Eb1A18d8711336B21f6106697253::FLY;
     use 0x7231Eb1A18d8711336B21f6106697253::Admin;
     use 0x7231Eb1A18d8711336B21f6106697253::Price;
     use 0x7231Eb1A18d8711336B21f6106697253::Config;
     use 0x7231Eb1A18d8711336B21f6106697253::Treasury;
+    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
     use 0x7231Eb1A18d8711336B21f6106697253::PriceOracle;
     use 0x7231Eb1A18d8711336B21f6106697253::TreasuryHelper;
     use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256::{Self, Exp};
@@ -17,6 +20,7 @@ module Bond {
     const INSUFFICIENT_AMOUNT: u64 = 1;
     const EXCEEDS_MAX_AMOUNT: u64 = 2;
     const SLIPPAGE_LIMIT: u64 = 3;
+    const INVALID_TOKENTYPE: u64 = 4;
 
     struct Info<TokenType: store> has key {
         total_debt: u128,
@@ -56,7 +60,9 @@ module Bond {
         let info = borrow_global<Info<TokenType>>(admin_address);
         assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
         let native_price = bond_price<TokenType>();
+        0x1::Debug::print(&native_price);
         let usd_price = bond_price_usd<TokenType>();
+        0x1::Debug::print(&usd_price);
         let price = ExponentialU256::mantissa_to_u128(copy native_price);
         assert(max_price >= usd_price, SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
@@ -150,11 +156,24 @@ module Bond {
 
     public fun bond_price_usd<TokenType: copy+drop+store>(): u128 acquires Info {
         let native_price_exp = bond_price<TokenType>();
-        let token_price = PriceOracle::usdt_price<TokenType>();
-        let (price, dec) = Price::unpack(token_price);
-        let native_price_exp_mul_price = ExponentialU256::mul_scalar_exp(native_price_exp, price);
-        let bond_price_usd_exp = ExponentialU256::div_scalar_exp(native_price_exp_mul_price, dec);
-        ExponentialU256::mantissa_to_u128(bond_price_usd_exp)
+        if (Admin::is_reserve<TokenType>()) {
+            let token_price = PriceOracle::usdt_price<TokenType>();
+            let (price, dec) = Price::unpack(token_price);
+            let native_price_exp_mul_price = ExponentialU256::mul_scalar_exp(native_price_exp, price);
+            let bond_price_usd_exp = ExponentialU256::div_scalar_exp(native_price_exp_mul_price, dec);
+            ExponentialU256::truncate_to_u128(bond_price_usd_exp)
+        } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>()) {
+            let token_value_markdown = TreasuryHelper::markdown<FAI::FAI, FLY::FLY>();
+            let price_usd_exp = ExponentialU256::mul_scalar_exp(native_price_exp, token_value_markdown);
+            ExponentialU256::truncate_to_u128(price_usd_exp)
+        } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>()) {
+            let token_value_markdown = TreasuryHelper::markdown<FLY::FLY, STC::STC>();
+            let price_usd_exp = ExponentialU256::mul_scalar_exp(native_price_exp, token_value_markdown);
+            ExponentialU256::truncate_to_u128(price_usd_exp)
+        } else {
+            assert(false, INVALID_TOKENTYPE);
+            0
+        }
     }
 
     public fun debt_ratio<TokenType: copy+drop+store>(): Exp acquires Info {

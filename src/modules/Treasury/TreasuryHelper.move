@@ -17,7 +17,7 @@ module TreasuryHelper{
             if (Token::is_same_token<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>, TokenType>()) {
                 valuation<FLY::FLY, STC::STC>(amount)
             } else {
-                valuation<FLY::FLY, FAI::FAI>(amount)
+                valuation<FAI::FAI, FLY::FLY>(amount)
             }
         }
     }
@@ -38,6 +38,7 @@ module TreasuryHelper{
         let fly_decimal = Token::scaling_factor<FLY::FLY>();
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
         let total_value = get_total_value<Token_x, Token_y>();
+
         if (Token::is_same_token<Token_x, FLY::FLY>()) {
             let reserve_y_div_total_value_exp = ExponentialU256::exp(2*reserve_y, total_value);
             let reserve_y_div_total_value_mul_dec_exp =
@@ -47,7 +48,7 @@ module TreasuryHelper{
             let reserve_x_div_total_value_exp = ExponentialU256::exp(2*reserve_x, total_value);
             let reserve_x_div_total_value_mul_dec_exp =
                 ExponentialU256::mul_scalar_exp(reserve_x_div_total_value_exp, fly_decimal);
-            ExponentialU256::mantissa_to_u128(reserve_x_div_total_value_mul_dec_exp)
+            ExponentialU256::truncate_to_u128(reserve_x_div_total_value_mul_dec_exp)
         }
     }
 
@@ -65,10 +66,15 @@ module TreasuryHelper{
 
     fun get_k_value<Token_x: store+drop+copy, Token_y: store+drop+copy>(): u128{
         let p_decimals = Token::scaling_factor<TokenSwap::LiquidityToken<Token_x, Token_y>>();
+        let x_decimals = Token::scaling_factor<Token_x>();
+        let y_decimals = Token::scaling_factor<Token_y>();
+        let div_decimals = x_decimals * y_decimals / p_decimals;
         let (reserve_x, reserve_y) = TokenSwap::get_reserves<Token_x, Token_y>();
-        let x_mul_y = ExponentialU256::mul_exp_u128(reserve_x, reserve_y);
-        let x_mul_y_div_dec = ExponentialU256::div_scalar_exp(x_mul_y, p_decimals);
-        ExponentialU256::mantissa_to_u128(x_mul_y_div_dec)
+        let reserve_x_exp = ExponentialU256::exp(reserve_x, 1);
+        let reserve_y_exp = ExponentialU256::exp(reserve_y, 1);
+        let x_mul_y = ExponentialU256::mul_exp(reserve_x_exp, reserve_y_exp);
+        let x_mul_y_div_dec = ExponentialU256::div_scalar_exp(x_mul_y, div_decimals);
+        ExponentialU256::truncate_to_u128(x_mul_y_div_dec)
     }
 
     public fun new_index(old_index: u128, amount: u128, stake_amount: u128): u128 {

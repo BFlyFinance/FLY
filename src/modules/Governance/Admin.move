@@ -42,7 +42,7 @@ module Admin {
             true
         } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>()) {
             false
-        } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FLY::FLY, FAI::FAI>>()) {
+        } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>()) {
             false
         } else {
             assert(false, INVALID_TOKENTYPE);
