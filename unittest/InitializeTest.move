@@ -1,9 +1,9 @@
-address 0x7231Eb1A18d8711336B21f6106697253 {
+address 0xA4c60527238c2893deAF3061B759c11E {
 module InitializeTest {
-    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
-    use 0x7231Eb1A18d8711336B21f6106697253::TestHelper;
+    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
+    use 0xA4c60527238c2893deAF3061B759c11E::TestHelper;
 
-    #[test(sender = @0x7231Eb1A18d8711336B21f6106697253)]
+    #[test(sender = @0xA4c60527238c2893deAF3061B759c11E)]
     public fun initialize_treasury_test(sender: signer) {
         TestHelper::before_test();
         Initialize::initialize_bond_stake(&sender);

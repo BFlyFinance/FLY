@@ -3,7 +3,7 @@
 //! account: feeadmin, 0xd231d9da8e37fc3d9ff3f576cf978535
 //! account: exchanger, 100000 0x1::STC::STC
 //! account: alice, 10000000000 0x1::STC::STC
-//! account: flyadmin, 0x7231Eb1A18d8711336B21f6106697253, 1000000000000000000 0x1::STC::STC
+//! account: flyadmin, 0xA4c60527238c2893deAF3061B759c11E, 1000000000000000000 0x1::STC::STC
 //! account: faiadmin, 0xfe125d419811297dfab03c61efec0bc9, 1000000000000000000 0x1::STC::STC
 
 
@@ -27,7 +27,7 @@ address faiadmin = {{faiadmin}};
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
+    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
 
     fun init_account(signer: signer) {
         Initialize::init_oracle(&signer);
@@ -41,7 +41,7 @@ script {
 address alice = {{alice}};
 script {
     use 0x1::Account;
-    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
+    use 0xA4c60527238c2893deAF3061B759c11E::FLY;
     use 0xfe125d419811297dfab03c61efec0bc9::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::CommonHelper;
 
@@ -58,8 +58,8 @@ address flyadmin = {{flyadmin}};
 address alice = {{alice}};
 script {
     use 0x1::Account;
-    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
-    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
+    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
+    use 0xA4c60527238c2893deAF3061B759c11E::FLY;
 
     fun init_account(signer: signer) {
         Initialize::initialize_treasury(&signer);
@@ -73,7 +73,7 @@ script {
 address admin = {{admin}};
 script {
     use 0x1::STC::STC;
-    use 0x7231Eb1A18d8711336B21f6106697253::FLY::{FLY};
+    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
     use 0xfe125d419811297dfab03c61efec0bc9::TokenMock::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
 
@@ -92,9 +92,9 @@ script {
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
-    use 0x7231Eb1A18d8711336B21f6106697253::Config;
-    use 0x7231Eb1A18d8711336B21f6106697253::Initialize;
+    use 0xA4c60527238c2893deAF3061B759c11E::FLY;
+    use 0xA4c60527238c2893deAF3061B759c11E::Config;
+    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
 
     fun init_bond_stake(signer: signer) {
         Initialize::initialize_bond_stake(&signer);
@@ -112,7 +112,7 @@ script {
 //! sender: alice
 address alie = {{alice}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::Stake;
+    use 0xA4c60527238c2893deAF3061B759c11E::Stake;
 
     fun stake(signer: signer) {
         Stake::stake(&signer, 5000000000u128);
@@ -124,7 +124,7 @@ script {
 //! sender: alice
 address alie = {{alice}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::Stake;
+    use 0xA4c60527238c2893deAF3061B759c11E::Stake;
 
     fun stake(signer: signer) {
         Stake::forfeit(&signer);
@@ -136,7 +136,7 @@ script {
 //! sender: alice
 address alie = {{alice}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::Stake;
+    use 0xA4c60527238c2893deAF3061B759c11E::Stake;
 
     fun stake(signer: signer) {
         Stake::stake(&signer, 5000000000u128);
@@ -152,7 +152,7 @@ script {
 //! sender: alice
 address alie = {{alice}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::Stake;
+    use 0xA4c60527238c2893deAF3061B759c11E::Stake;
 
     fun calim() {
         Stake::claim();
@@ -172,7 +172,7 @@ script {
 //! sender: alice
 address alie = {{alice}};
 script {
-    use 0x7231Eb1A18d8711336B21f6106697253::Stake;
+    use 0xA4c60527238c2893deAF3061B759c11E::Stake;
 
     fun unstake(signer: signer) {
         Stake::unstake(&signer, 5000000000u128);

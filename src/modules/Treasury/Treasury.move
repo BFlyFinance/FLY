@@ -1,12 +1,12 @@
-address 0x7231Eb1A18d8711336B21f6106697253 {
+address 0xA4c60527238c2893deAF3061B759c11E {
 module Treasury {
 
     use 0x1::Signer;
     use 0x1::Account;
     use 0x1::Token::{Self, Token};
-    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
-    use 0x7231Eb1A18d8711336B21f6106697253::Admin;
-    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
+    use 0xA4c60527238c2893deAF3061B759c11E::FLY;
+    use 0xA4c60527238c2893deAF3061B759c11E::Admin;
+    use 0xA4c60527238c2893deAF3061B759c11E::ExponentialU256;
 
     const INVALID_ADDRESS: u64 = 1;
     const INVALID_AMOUNT: u64 = 2;

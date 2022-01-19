@@ -1,9 +1,9 @@
-address 0x7231Eb1A18d8711336B21f6106697253 {
+address 0xA4c60527238c2893deAF3061B759c11E {
 module AdminScript {
 
-    use 0x7231Eb1A18d8711336B21f6106697253::FLY;
-    use 0x7231Eb1A18d8711336B21f6106697253::Config;
-    use 0x7231Eb1A18d8711336B21f6106697253::Treasury;
+    use 0xA4c60527238c2893deAF3061B759c11E::FLY;
+    use 0xA4c60527238c2893deAF3061B759c11E::Config;
+    use 0xA4c60527238c2893deAF3061B759c11E::Treasury;
 
     public(script) fun update_bond_config<TokenType: store+drop+copy>(account: signer,
         control_var: u128,

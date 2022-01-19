@@ -1,4 +1,4 @@
-address 0x7231Eb1A18d8711336B21f6106697253 {
+address 0xA4c60527238c2893deAF3061B759c11E {
 module Price {
 
     struct PriceNumber has drop,copy{

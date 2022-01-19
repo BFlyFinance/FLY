@@ -1,8 +1,8 @@
-address 0x7231Eb1A18d8711336B21f6106697253 {
+address 0xA4c60527238c2893deAF3061B759c11E {
 module MarketScript {
-    use 0x7231Eb1A18d8711336B21f6106697253::Bond;
-    use 0x7231Eb1A18d8711336B21f6106697253::Stake;
-    use 0x7231Eb1A18d8711336B21f6106697253::ExponentialU256;
+    use 0xA4c60527238c2893deAF3061B759c11E::Bond;
+    use 0xA4c60527238c2893deAF3061B759c11E::Stake;
+    use 0xA4c60527238c2893deAF3061B759c11E::ExponentialU256;
 
     public(script) fun buy_bond<TokenType: copy+drop+store>(sender: signer, amount: u128, max_price: u128) {
         Bond::deposit<TokenType>(&sender, amount, max_price);
