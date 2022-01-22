@@ -3,6 +3,7 @@ module InitializeScript {
 
     use 0x1::STC::STC;
 //    use 0xA4c60527238c2893deAF3061B759c11E::FAIMock;
+    use 0xA4c60527238c2893deAF3061B759c11E::Config;
     use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
     use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
@@ -43,8 +44,28 @@ module InitializeScript {
         Initialize::init_oracle(&account);
     }
 
-//    public(script) fun init_fai(account: signer) {
-//        FAIMock::initialize(&account);
-//    }
+    public(script) fun init_bond<TokenType: store+drop+copy>(
+        account: signer,
+        control_var: u128,
+        minimum_price: u128,
+        max_payout: u128,
+        fee: u128,
+        max_debt: u128,
+        vesting_term: u128
+
+    ) {
+        Config::init_bond_config<TokenType>(
+            &account,
+            control_var,
+            minimum_price,
+            max_payout,
+            fee,
+            max_debt,
+            vesting_term
+        );
+    }
+
+
+
 }
 }
