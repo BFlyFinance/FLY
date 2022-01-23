@@ -58,7 +58,7 @@ module Bond {
             = Config::get_bond_config<TokenType>();
         assert(Account::balance<TokenType>(Signer::address_of(sender)) >= amount, INSUFFICIENT_AMOUNT);
         let info = borrow_global<Info<TokenType>>(admin_address);
-        assert(info.total_debt <= max_debt, EXCEEDS_MAX_AMOUNT);
+        assert(info.total_purchased <= max_debt, EXCEEDS_MAX_AMOUNT);
         let native_price = bond_price<TokenType>();
         0x1::Debug::print(&native_price);
         let usd_price = bond_price_usd<TokenType>();

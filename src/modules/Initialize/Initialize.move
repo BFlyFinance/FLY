@@ -24,7 +24,6 @@ module Initialize {
         Treasury::initialize_pool<FAI::FAI>(sender);
         Treasury::initialize_pool<TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>(sender);
         Treasury::initialize_pool<TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>(sender);
-
     }
 
     fun initialize_bond(sender: &signer) {

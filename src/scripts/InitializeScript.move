@@ -64,8 +64,5 @@ module InitializeScript {
             vesting_term
         );
     }
-
-
-
 }
 }
