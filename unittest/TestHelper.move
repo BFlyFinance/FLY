@@ -1,15 +1,15 @@
-address 0xA4c60527238c2893deAF3061B759c11E {
+address FLYAdmin {
 module TestHelper {
-    use 0x1::Token;
-    use 0x1::Account;
-    use 0x1::STC ;
-    use 0x1::Timestamp;
-    use 0x1::CoreAddresses;
-    use 0x1::NFT;
-    use 0x1::ChainId;
-    use 0x1::Oracle;
-    use 0xA4c60527238c2893deAF3061B759c11E::Admin;
-    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
+    use StarcoinFramework::Token;
+    use StarcoinFramework::Account;
+    use StarcoinFramework::STC ;
+    use StarcoinFramework::Timestamp;
+    use StarcoinFramework::CoreAddresses;
+    use StarcoinFramework::NFT;
+    use StarcoinFramework::ChainId;
+    use StarcoinFramework::Oracle;
+    use FLYAdmin::Admin;
+    use FLYAdmin::Initialize;
 
     struct GenesisSignerCapability has key {
         cap: Account::SignerCapability,

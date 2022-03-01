@@ -1,0 +1,10 @@
+[package]
+name = "FLY"
+version = "0.9.0"
+
+[addresses]
+StarcoinFramework = "0x1"
+FLYAdmin = "0xA4c60527238c2893deAF3061B759c11E"
+
+[dependencies]
+StarcoinFramework = {git = "https://github.com/starcoinorg/starcoin.git", subdir="vm/stdlib/", rev="51fc701f75b3be524149a0410c837ca7136fe7a0"}

@@ -1,10 +1,10 @@
-//! account: admin, 0x4783d08fb16990bd35d83f3e23bf93b8, 200000 0x1::STC::STC
-//! account: feetokenholder, 0x9350502a3af6c617e9a42fa9e306a385, 400000 0x1::STC::STC
+//! account: admin, 0x4783d08fb16990bd35d83f3e23bf93b8, 200000 StarcoinFramework::STC::STC
+//! account: feetokenholder, 0x9350502a3af6c617e9a42fa9e306a385, 400000 StarcoinFramework::STC::STC
 //! account: feeadmin, 0xd231d9da8e37fc3d9ff3f576cf978535
-//! account: exchanger, 100000 0x1::STC::STC
-//! account: alice, 10000000000000 0x1::STC::STC
-//! account: flyadmin, 0xA4c60527238c2893deAF3061B759c11E, 1000000000000000000 0x1::STC::STC
-//! account: faiadmin, 0xfe125d419811297dfab03c61efec0bc9, 1000000000000000000 0x1::STC::STC
+//! account: exchanger, 100000 StarcoinFramework::STC::STC
+//! account: alice, 10000000000000 StarcoinFramework::STC::STC
+//! account: flyadmin, FLYAdmin, 1000000000000000000 StarcoinFramework::STC::STC
+//! account: faiadmin, 0xfe125d419811297dfab03c61efec0bc9, 1000000000000000000 StarcoinFramework::STC::STC
 
 
 //! block-prologue
@@ -15,9 +15,9 @@
 //! sender: alice
 address alice = {{alice}};
 script {
-    use 0x1::Account;
+    use StarcoinFramework::Account;
     use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use FLYAdmin::FLY::{FLY};
 
     fun init_account(signer: signer) {
         Account::do_accept_token<FLY>(&signer);
@@ -31,7 +31,7 @@ script {
 address faiadmin = {{faiadmin}};
 address alice = {{alice}};
 script {
-    use 0x1::Account;
+    use StarcoinFramework::Account;
     use 0xfe125d419811297dfab03c61efec0bc9::FAI;
 
     fun token_init(signer: signer) {
@@ -47,7 +47,7 @@ script {
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
-    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
+    use FLYAdmin::Initialize;
 
     fun init_account(signer: signer) {
         Initialize::init_oracle(&signer);
@@ -60,9 +60,9 @@ script {
 address flyadmin = {{flyadmin}};
 address alice = {{alice}};
 script {
-    use 0x1::Account;
-    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use StarcoinFramework::Account;
+    use FLYAdmin::Initialize;
+    use FLYAdmin::FLY::{FLY};
 
     fun init_account(signer: signer) {
         Initialize::initialize_treasury(&signer);
@@ -75,18 +75,18 @@ script {
 //! sender: admin
 address admin = {{admin}};
 script {
-    use 0x1::STC::STC;
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use StarcoinFramework::STC::STC;
+    use FLYAdmin::FLY::{FLY};
     use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
 
     fun register_token_pair(signer: signer) {
         //token pair register must be swap admin account
         TokenSwapRouter::register_swap_pair<FLY, FAI>(&signer);
-        assert(TokenSwapRouter::swap_pair_exists<FLY, FAI>(), 111);
+        assert!(TokenSwapRouter::swap_pair_exists<FLY, FAI>(), 111);
 
         TokenSwapRouter::register_swap_pair<FLY, STC>(&signer);
-        assert(TokenSwapRouter::swap_pair_exists<FLY, STC>(), 112);
+        assert!(TokenSwapRouter::swap_pair_exists<FLY, STC>(), 112);
     }
 }
 // check: EXECUTED
@@ -95,10 +95,10 @@ script {
 //! sender: alice
 address alice = {{alice}};
 script {
-    use 0x1::Signer;
-    use 0x1::Account;
-    use 0x1::STC::STC;
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use StarcoinFramework::Signer;
+    use StarcoinFramework::Account;
+    use StarcoinFramework::STC::STC;
+    use FLYAdmin::FLY::{FLY};
     use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
@@ -106,8 +106,8 @@ script {
     fun register_token_pair(signer: signer) {
         TokenSwapRouter::add_liquidity<FLY, STC>(&signer, 10000000000u128, 1000000000000u128, 5000u128, 5000u128);
         TokenSwapRouter::add_liquidity<FLY, FAI>(&signer, 10000000000u128, 1000000000000u128, 5000u128, 5000u128);
-        0x1::Debug::print(&Account::balance<TokenSwap::LiquidityToken<STC, FLY>>(Signer::address_of(&signer)));
-        0x1::Debug::print(&Account::balance<TokenSwap::LiquidityToken<FAI, FLY>>(Signer::address_of(&signer)));
+        StarcoinFramework::Debug::print(&Account::balance<TokenSwap::LiquidityToken<STC, FLY>>(Signer::address_of(&signer)));
+        StarcoinFramework::Debug::print(&Account::balance<TokenSwap::LiquidityToken<FAI, FLY>>(Signer::address_of(&signer)));
     }
 }
 // check: EXECUTED
@@ -116,10 +116,10 @@ script {
 //! sender: flyadmin
 address flyadmin = {{flyadmin}};
 script {
-    use 0xA4c60527238c2893deAF3061B759c11E::Config;
+    use FLYAdmin::Config;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
-    use 0xA4c60527238c2893deAF3061B759c11E::Initialize;
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use FLYAdmin::Initialize;
+    use FLYAdmin::FLY::{FLY};
     use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
 
 fun init_bond_stake(signer: signer) {
@@ -134,15 +134,15 @@ fun init_bond_stake(signer: signer) {
 //! sender: alice
 address alice = {{alice}};
 script {
-    use 0xA4c60527238c2893deAF3061B759c11E::Bond;
+    use FLYAdmin::Bond;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use FLYAdmin::FLY::{FLY};
     use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
 
 fun deposit_stc_bond(signer: signer) {
         Bond::deposit<TokenSwap::LiquidityToken<FAI, FLY>>(&signer, 1000000u128, 152800000000000000u128);
 //        let bond_price = Bond::bond_price_usd<TokenSwap::LiquidityToken<FAI, FLY>>();
-//        0x1::Debug::print(&bond_price);
+//        StarcoinFramework::Debug::print(&bond_price);
     }
 }
 // check: EXECUTED
@@ -155,9 +155,9 @@ fun deposit_stc_bond(signer: signer) {
 //! sender: alice
 address alice = {{alice}};
 script {
-    use 0xA4c60527238c2893deAF3061B759c11E::Bond;
+    use FLYAdmin::Bond;
     use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
-    use 0xA4c60527238c2893deAF3061B759c11E::FLY::{FLY};
+    use FLYAdmin::FLY::{FLY};
     use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
 
 fun redeem_lp_bond(signer: signer) {
