@@ -12,7 +12,7 @@ module Treasury {
     const INVALID_AMOUNT: u64 = 2;
 
 
-    struct AssetPool<TokenType: copy+drop+store> has key, store {
+    struct AssetPool<phantom TokenType: copy+drop+store> has key, store {
         asset: Token<TokenType>
     }
 

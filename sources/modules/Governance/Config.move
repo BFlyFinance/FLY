@@ -3,7 +3,7 @@ module Config {
     use StarcoinFramework::Config;
     use FLYAdmin::Admin;
 
-    struct BondConfig<TokenType> has copy, store, drop {
+    struct BondConfig<phantom TokenType> has copy, store, drop {
         control_var: u128,
         minimum_price: u128,
         max_payout: u128,
@@ -12,7 +12,7 @@ module Config {
         vesting_term: u128
     }
 
-    struct StakeConfig<TokenType> has copy, store, drop {
+    struct StakeConfig<phantom TokenType> has copy, store, drop {
         reward_rate: u128,
         rebase_period: u64
     }

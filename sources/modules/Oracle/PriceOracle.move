@@ -8,7 +8,7 @@ module PriceOracle {
     use FLYAdmin::Admin;
     use FLYAdmin::STCOracle;
     use FLYAdmin::FAIOracle;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
+    use FaiAdmin::FAI;
 
     const NOT_SUPPROT_TOKEN_TYPE: u64 = 1;
 

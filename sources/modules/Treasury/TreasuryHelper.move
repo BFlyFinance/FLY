@@ -5,10 +5,10 @@ module TreasuryHelper{
     use StarcoinFramework::Math;
     use StarcoinFramework::Token;
     use FLYAdmin::FLY;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
+    use FaiAdmin::FAI;
     use FLYAdmin::Admin;
     use FLYAdmin::ExponentialU256::{Self, Exp};
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap::{Self};
+    use SwapAdmin::TokenSwap::{Self};
 
     public fun value_of<TokenType: drop+copy+store> (amount: u128): u128 {
         if (Admin::is_reserve<TokenType>()) {

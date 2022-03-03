@@ -1,22 +1,22 @@
-//! account: admin, 0x4783d08fb16990bd35d83f3e23bf93b8, 200000 StarcoinFramework::STC::STC
-//! account: feetokenholder, 0x9350502a3af6c617e9a42fa9e306a385, 400000 StarcoinFramework::STC::STC
-//! account: feeadmin, 0xd231d9da8e37fc3d9ff3f576cf978535
-//! account: exchanger, 100000 StarcoinFramework::STC::STC
-//! account: alice, 10000000000000 StarcoinFramework::STC::STC
-//! account: flyadmin, FLYAdmin, 1000000000000000000 StarcoinFramework::STC::STC
-//! account: faiadmin, 0xfe125d419811297dfab03c61efec0bc9, 1000000000000000000 StarcoinFramework::STC::STC
+//# init -n dev --public-keys SwapAdmin=0x5510ddb2f172834db92842b0b640db08c2bc3cd986def00229045d78cc528ac5 FaiAdmin=0x1725f86f6e4492afc3c2a6089d7d53a07ae88297b780464d13bba404a969d189 FLYAdmin=0xd948aab1ee547c97d5d3f91b08e0823f021c8d7d111054c4ae667db8165e2942
+
+//# faucet --addr SwapAdmin --amount 100000000000000
+
+//# faucet --addr FLYAdmin --amount 100000000000000000
+
+//# faucet --addr FaiAdmin --amount 1000000000000000
+
+//# faucet --addr alice --amount 1000000000000000
+
+//# faucet --addr bob --amount 1000000000000000
+
+//# block --timestamp 1631244204293
 
 
-//! block-prologue
-//! author: genesis
-//! block-number: 1
-//! block-time: 1631244204293
-//! new-transaction
-//! sender: alice
-address alice = {{alice}};
+//# run --signers alice
 script {
     use StarcoinFramework::Account;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
+    use FaiAdmin::FAI::{FAI};
     use FLYAdmin::FLY::{FLY};
 
     fun init_account(signer: signer) {
@@ -26,26 +26,44 @@ script {
 }
 // check: EXECUTED
 
-//! new-transaction
-//! sender: faiadmin
-address faiadmin = {{faiadmin}};
-address alice = {{alice}};
+//# run --signers FaiAdmin
+script {
+    use FaiAdmin::InitializeScript;
+
+    fun fai_init(signer: signer) {
+        InitializeScript::initialize(signer);
+    }
+}
+// CHECK: EXECUTED
+
+//# run --signers FaiAdmin
+script {
+    use StarcoinFramework::PriceOracleScripts;
+    use StarcoinFramework::STCUSDOracle;
+
+    fun init_stcusd_oracle(signer: signer) {
+        PriceOracleScripts::init_data_source<STCUSDOracle::STCUSD>(signer, 1000000000000000);
+    }
+}
+
+//# run --signers FaiAdmin
 script {
     use StarcoinFramework::Account;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
+    use FaiAdmin::STCVaultPoolA;
+    use FaiAdmin::FAI;
 
     fun token_init(signer: signer) {
-        FAI::register_token<FAI::FAI>(&signer, 9u8);
-        let token = FAI::mint_token<FAI::FAI>(10000000000000000u128);
-        Account::deposit_to_self<FAI::FAI>(&signer, token);
+
+        STCVaultPoolA::create_vault(&signer);
+        STCVaultPoolA::deposit(&signer, 1000000000000u128);
+        STCVaultPoolA::borrow_fai(&signer, 0u128);
+
         Account::pay_from<FAI::FAI>(&signer, @alice, 100000000000000u128);
 }
 }
-// check: EXECUTED
+// CHECK: EXECUTED
 
-//! new-transaction
-//! sender: flyadmin
-address flyadmin = {{flyadmin}};
+//# run --signers FLYAdmin
 script {
     use FLYAdmin::Initialize;
 
@@ -55,10 +73,7 @@ script {
 }
 // check: EXECUTED
 
-//! new-transaction
-//! sender: flyadmin
-address flyadmin = {{flyadmin}};
-address alice = {{alice}};
+//# run --signers FLYAdmin
 script {
     use StarcoinFramework::Account;
     use FLYAdmin::Initialize;
@@ -71,14 +86,12 @@ script {
 }
 // check: EXECUTED
 
-//! new-transaction
-//! sender: admin
-address admin = {{admin}};
+//# run --signers SwapAdmin
 script {
     use StarcoinFramework::STC::STC;
     use FLYAdmin::FLY::{FLY};
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
+    use FaiAdmin::FAI::{FAI};
+    use SwapAdmin::TokenSwapRouter;
 
     fun register_token_pair(signer: signer) {
         //token pair register must be swap admin account
@@ -91,17 +104,15 @@ script {
 }
 // check: EXECUTED
 
-//! new-transaction
-//! sender: alice
-address alice = {{alice}};
+//# run --signers alice
 script {
     use StarcoinFramework::Signer;
     use StarcoinFramework::Account;
     use StarcoinFramework::STC::STC;
     use FLYAdmin::FLY::{FLY};
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
+    use FaiAdmin::FAI::{FAI};
+    use SwapAdmin::TokenSwap;
+    use SwapAdmin::TokenSwapRouter;
 
     fun register_token_pair(signer: signer) {
         TokenSwapRouter::add_liquidity<FLY, STC>(&signer, 10000000000u128, 1000000000000u128, 5000u128, 5000u128);
@@ -112,15 +123,13 @@ script {
 }
 // check: EXECUTED
 
-//! new-transaction
-//! sender: flyadmin
-address flyadmin = {{flyadmin}};
+//# run --signers FLYAdmin
 script {
     use FLYAdmin::Config;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
+    use SwapAdmin::TokenSwap;
     use FLYAdmin::Initialize;
     use FLYAdmin::FLY::{FLY};
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
+    use FaiAdmin::FAI::{FAI};
 
 fun init_bond_stake(signer: signer) {
         Initialize::initialize_bond_stake(&signer);
@@ -130,37 +139,31 @@ fun init_bond_stake(signer: signer) {
 }
 // check: EXECUTED
 
-//! new-transaction
-//! sender: alice
-address alice = {{alice}};
+//# run --signers alice
 script {
     use FLYAdmin::Bond;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
+    use SwapAdmin::TokenSwap;
     use FLYAdmin::FLY::{FLY};
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
+    use FaiAdmin::FAI::{FAI};
 
-fun deposit_stc_bond(signer: signer) {
+    fun deposit_stc_bond(signer: signer) {
         Bond::deposit<TokenSwap::LiquidityToken<FAI, FLY>>(&signer, 1000000u128, 152800000000000000u128);
-//        let bond_price = Bond::bond_price_usd<TokenSwap::LiquidityToken<FAI, FLY>>();
-//        StarcoinFramework::Debug::print(&bond_price);
+    //        let bond_price = Bond::bond_price_usd<TokenSwap::LiquidityToken<FAI, FLY>>();
+    //        StarcoinFramework::Debug::print(&bond_price);
     }
 }
 // check: EXECUTED
 
-//! block-prologue
-//! author: genesis
-//! block-number: 2
-//! block-time: 1631254204293
-//! new-transaction
-//! sender: alice
-address alice = {{alice}};
+//# block --timestamp 1631254204293
+
+//# run --signers alice
 script {
     use FLYAdmin::Bond;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
+    use SwapAdmin::TokenSwap;
     use FLYAdmin::FLY::{FLY};
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
+    use FaiAdmin::FAI::{FAI};
 
-fun redeem_lp_bond(signer: signer) {
-    Bond::redeem<TokenSwap::LiquidityToken<FAI, FLY>>(&signer);
+    fun redeem_lp_bond(signer: signer) {
+        Bond::redeem<TokenSwap::LiquidityToken<FAI, FLY>>(&signer);
     }
 }

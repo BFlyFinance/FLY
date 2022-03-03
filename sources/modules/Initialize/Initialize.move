@@ -4,13 +4,13 @@ module Initialize {
     use StarcoinFramework::Signer;
     use StarcoinFramework::PriceOracle;
     use StarcoinFramework::STCUSDOracle::{STCUSD};
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
+    use FaiAdmin::FAI;
     use FLYAdmin::FLY;
     use FLYAdmin::Bond;
     use FLYAdmin::Stake;
     use FLYAdmin::Config;
     use FLYAdmin::Treasury;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
+    use SwapAdmin::TokenSwap;
 
     public fun initialize_bond_stake(sender: &signer) {
         initialize_bond(sender);

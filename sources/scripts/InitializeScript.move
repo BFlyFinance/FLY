@@ -6,8 +6,8 @@ module InitializeScript {
     use FLYAdmin::Config;
     use FLYAdmin::FLY::{FLY};
     use FLYAdmin::Initialize;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwapRouter;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI::{FAI};
+    use SwapAdmin::TokenSwapRouter;
+    use FaiAdmin::FAI::{FAI};
 
 
 //    public(script) fun safe_mint<TokenType: store>(account: signer, token_amount: u128) {

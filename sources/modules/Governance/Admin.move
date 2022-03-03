@@ -6,8 +6,8 @@ module Admin {
     use StarcoinFramework::ChainId;
     use StarcoinFramework::Token::{Self};
     use FLYAdmin::FLY;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
+    use FaiAdmin::FAI;
+    use SwapAdmin::TokenSwap;
 
     const INVALID_ADDRESS: u64 = 1;
     const INVALID_TOKENTYPE: u64 = 2;

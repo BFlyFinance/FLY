@@ -6,13 +6,13 @@ module Bond {
     use StarcoinFramework::Signer;
     use StarcoinFramework::Account;
     use StarcoinFramework::Timestamp;
-    use 0xfe125d419811297dfab03c61efec0bc9::FAI;
+    use FaiAdmin::FAI;
     use FLYAdmin::FLY;
     use FLYAdmin::Admin;
     use FLYAdmin::Price;
     use FLYAdmin::Config;
     use FLYAdmin::Treasury;
-    use 0x4783d08fb16990bd35d83f3e23bf93b8::TokenSwap;
+    use SwapAdmin::TokenSwap;
     use FLYAdmin::PriceOracle;
     use FLYAdmin::TreasuryHelper;
     use FLYAdmin::ExponentialU256::{Self, Exp};
@@ -22,13 +22,13 @@ module Bond {
     const SLIPPAGE_LIMIT: u64 = 3;
     const INVALID_TOKENTYPE: u64 = 4;
 
-    struct Info<TokenType: store> has key {
+    struct Info<phantom TokenType: store> has key {
         total_debt: u128,
         total_purchased: u128,
         last_update_time: u64,
     }
 
-    struct Bond<TokenType: store> has key, store {
+    struct Bond<phantom TokenType: store> has key, store {
         token: Token::Token<FLY::FLY>,
         payout: u128,
         price_paid: u128,

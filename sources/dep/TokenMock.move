@@ -4,7 +4,7 @@ module TokenMock {
     use StarcoinFramework::Token;
     use StarcoinFramework::Account;
 
-    struct TokenSharedCapability<TokenType> has key, store {
+    struct TokenSharedCapability<phantom TokenType> has key, store {
         mint: Token::MintCapability<TokenType>,
         burn: Token::BurnCapability<TokenType>,
     }

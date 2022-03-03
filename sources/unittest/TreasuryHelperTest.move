@@ -1,4 +1,5 @@
 address FLYAdmin {
+#[test_only]
 module TreasuryHelperTest {
     use  FLYAdmin::TreasuryHelper;
 
