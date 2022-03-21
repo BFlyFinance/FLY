@@ -52,6 +52,7 @@ module Bond {
 
     public fun deposit<TokenType: copy+drop+store>(sender: &signer, amount: u128, max_price: u128)
     acquires Info, Bond, MintCap {
+        Config::check_global_switch();
         let admin_address = Admin::admin_address();
         decay_debt<TokenType>();
         let (_, _, _, fee, max_debt, vesting_term)
@@ -78,6 +79,7 @@ module Bond {
     }
 
     public fun redeem<TokenType: copy+drop+store>(sender: &signer) acquires Bond {
+        Config::check_global_switch();
         let percent = percent_vested_for<TokenType>(Signer::address_of(sender));
         let voucher = borrow_global_mut<Bond<TokenType>>(Signer::address_of(sender));
         let balance = Token::value<FLY::FLY>(&voucher.token);

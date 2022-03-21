@@ -67,6 +67,7 @@ module Stake {
 
     // retrieve fly from warmup
     public fun claim() acquires Warmup, Pool{
+        Config::check_global_switch();
         let time_now = Timestamp::now_seconds();
         let admin_address = Admin::admin_address();
         let warmup = borrow_global<Warmup>(admin_address);
@@ -85,6 +86,7 @@ module Stake {
 
     // forfeit sFLY in warmup and retrieve FLY
     public fun forfeit(sender: &signer) acquires SFLY, Warmup, Pool, MintCap {
+        Config::check_global_switch();
         rebase();
         claim();
         fresh(Signer::address_of(sender));
@@ -103,6 +105,7 @@ module Stake {
     }
 
     public fun stake(sender: &signer, amount: u128) acquires Warmup, SFLY, Pool, MintCap {
+        Config::check_global_switch();
         rebase();
         claim();
         // check sender have enough amount
@@ -121,6 +124,7 @@ module Stake {
     }
 
     public fun unstake(sender: &signer, amount: u128) acquires Pool, SFLY, Warmup, MintCap{
+        Config::check_global_switch();
         rebase();
         claim();
         fresh(Signer::address_of(sender));
@@ -152,6 +156,7 @@ module Stake {
     }
 
     public fun rebase() acquires Pool, MintCap, Warmup {
+        Config::check_global_switch();
         let time_now = Timestamp::now_seconds();
         let pool = borrow_global_mut<Pool>(Admin::admin_address());
         let stake_amount = Token::value<FLY::FLY>(&pool.token);

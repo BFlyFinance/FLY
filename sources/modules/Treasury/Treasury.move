@@ -6,6 +6,7 @@ module Treasury {
     use StarcoinFramework::Token::{Self, Token};
     use FLYAdmin::FLY;
     use FLYAdmin::Admin;
+    use FLYAdmin::Config;
     use FLYAdmin::ExponentialU256;
 
     const INVALID_ADDRESS: u64 = 1;
@@ -57,6 +58,7 @@ module Treasury {
     }
 
     public fun deposit<TokenType: copy+drop+store> (sender: &signer, amount: u128) acquires AssetPool {
+        Config::check_global_switch();
         let balance = Account::balance<TokenType>(Signer::address_of(sender));
         assert!(balance >= amount, INVALID_AMOUNT);
         let admin_address = Admin::admin_address();
@@ -76,6 +78,7 @@ module Treasury {
     }
 
     public fun burn_dao(sender: &signer, amount: u128) acquires Dao, FLYBurnCap {
+        Config::check_global_switch();
         let admin_address = Admin::admin_address();
         assert!(admin_address == Signer::address_of(sender), INVALID_ADDRESS);
         let dao = borrow_global_mut<Dao>(admin_address);
@@ -86,6 +89,7 @@ module Treasury {
     }
 
     public fun withdraw_dao(sender: &signer, amount: u128) acquires Dao {
+        Config::check_global_switch();
         let admin_address = Admin::admin_address();
         assert!(admin_address == Signer::address_of(sender), INVALID_ADDRESS);
         let dao = borrow_global_mut<Dao>(admin_address);
@@ -106,6 +110,7 @@ module Treasury {
     }
 
     public fun withdraw<TokenType: copy+drop+store>(sender: &signer, amount: u128) acquires AssetPool {
+        Config::check_global_switch();
         Admin::is_admin(sender);
         let pool = borrow_global_mut<AssetPool<TokenType>>(Signer::address_of(sender));
         let balance = Token::value<TokenType>(&pool.asset);

@@ -89,8 +89,10 @@ script {
 //# run --signers SwapAdmin
 script {
     use StarcoinFramework::STC::STC;
+    use StarcoinFramework::Token;
     use FLYAdmin::FLY::{FLY};
     use FaiAdmin::FAI::{FAI};
+    use SwapAdmin::TokenSwap;
     use SwapAdmin::TokenSwapRouter;
 
     fun register_token_pair(signer: signer) {
@@ -100,6 +102,7 @@ script {
 
         TokenSwapRouter::register_swap_pair<FLY, STC>(&signer);
         assert!(TokenSwapRouter::swap_pair_exists<FLY, STC>(), 112);
+        StarcoinFramework::Debug::print(&Token::scaling_factor<TokenSwap::LiquidityToken<FAI, FLY>>());
     }
 }
 // check: EXECUTED
@@ -133,8 +136,15 @@ script {
 
 fun init_bond_stake(signer: signer) {
         Initialize::initialize_bond_stake(&signer);
-        Config::update_bond_config<TokenSwap::LiquidityToken<FAI, FLY>>(&signer, 1000u128, 10000u128, 100000000u128, 1000000000000000000u128, 10000000000000000u128, 10000u128);
-
+        Config::update_bond_config<TokenSwap::LiquidityToken<FAI, FLY>>(
+            &signer,
+            1000u128,
+            10000u128,
+            100000000u128,
+            1000000000000000000u128,
+            10000000000000000u128,
+            10000u128
+        );
     }
 }
 // check: EXECUTED

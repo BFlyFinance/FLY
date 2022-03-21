@@ -1,7 +1,12 @@
 address FLYAdmin {
 module Config {
     use StarcoinFramework::Config;
+    use StarcoinFramework::Signer;
+    use StarcoinFramework::Errors;
     use FLYAdmin::Admin;
+
+    const DEFAULT_GLOBAL_SWITCH: bool = false;
+    const GLOBAL_SWITCH_OFF: u64 = 207;
 
     struct BondConfig<phantom TokenType> has copy, store, drop {
         control_var: u128,
@@ -15,6 +20,10 @@ module Config {
     struct StakeConfig<phantom TokenType> has copy, store, drop {
         reward_rate: u128,
         rebase_period: u64
+    }
+
+    struct GlobalSwitch has copy, drop, store {
+        switch: bool
     }
 
     public fun new_BondConfig<TokenType: copy+drop+store>(
@@ -127,6 +136,29 @@ module Config {
 
     }
 
+    public fun set_global_switch(signer: &signer, switch: bool) {
+        Admin::is_admin(signer);
+        let config = GlobalSwitch {
+            switch
+        };
+        if (Config::config_exist_by_address<GlobalSwitch>(Signer::address_of(signer))) {
+            Config::set<GlobalSwitch>(signer, config);
+        } else {
+            Config::publish_new_config<GlobalSwitch>(signer, config);
+        }
+    }
 
+    public fun get_global_switch(): bool {
+        if (Config::config_exist_by_address<GlobalSwitch>(Admin::admin_address())) {
+            let switch_config = Config::get_by_address<GlobalSwitch>(Admin::admin_address());
+            switch_config.switch
+        } else {
+            DEFAULT_GLOBAL_SWITCH
+        }
+    }
+
+    public fun check_global_switch() {
+        assert!(!get_global_switch(), Errors::invalid_state(GLOBAL_SWITCH_OFF));
+    }
 }
 }

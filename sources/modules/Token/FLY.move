@@ -2,7 +2,6 @@ address FLYAdmin {
 module FLY {
     use StarcoinFramework::Account;
     use StarcoinFramework::Token ;
-    use StarcoinFramework::Treasury;
 
     struct FLY has copy, drop, store {}
 
@@ -30,14 +29,6 @@ module FLY {
             cap,
             amount
         )
-    }
-
-    public fun deposit_to_treasury(amount: Token::Token<FLY>) {
-        Treasury::deposit<FLY>(amount)
-    }
-
-    public fun treasury_balance(): u128 {
-        Treasury::balance<FLY>()
     }
 }
 }
