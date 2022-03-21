@@ -177,3 +177,39 @@ script {
         Bond::redeem<TokenSwap::LiquidityToken<FAI, FLY>>(&signer);
     }
 }
+
+//# run --signers FLYAdmin
+script {
+    use FLYAdmin::Config;
+
+    fun set_global_switch_on(signer: signer) {
+        Config::set_global_switch(&signer, true);
+    }
+}
+// check: EXECUTED
+
+//# run --signers alice
+script {
+    use FLYAdmin::Bond;
+    use SwapAdmin::TokenSwap;
+    use FLYAdmin::FLY::{FLY};
+    use FaiAdmin::FAI::{FAI};
+
+    fun deposit_stc_bond_expect_fail_global_switch_on(signer: signer) {
+        Bond::deposit<TokenSwap::LiquidityToken<FAI, FLY>>(&signer, 1000000u128, 152800000000000000u128);
+    }
+}
+// check: MoveAbort 52993
+
+//# run --signers alice
+script {
+    use FLYAdmin::Bond;
+    use SwapAdmin::TokenSwap;
+    use FLYAdmin::FLY::{FLY};
+    use FaiAdmin::FAI::{FAI};
+
+    fun redeem_expect_fail_global_switch_on(signer: signer) {
+        Bond::redeem<TokenSwap::LiquidityToken<FAI, FLY>>(&signer);
+    }
+}
+// check: MoveAbort 52993

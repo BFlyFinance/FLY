@@ -176,3 +176,58 @@ script {
     }
 }
 // check: EXECUTED
+
+//# run --signers FLYAdmin
+script {
+    use FLYAdmin::Config;
+
+    fun set_global_switch_on(signer: signer) {
+        Config::set_global_switch(&signer, true);
+    }
+}
+// check: EXECUTED
+
+//# run --signers alice
+script {
+    use FLYAdmin::Stake;
+
+    fun stake(signer: signer) {
+        Stake::stake(&signer, 5000000000u128);
+    }
+}
+// check: MoveAbort 52993
+
+//# run --signers alice
+script {
+    use FLYAdmin::Stake;
+
+    fun calim() {
+        Stake::claim();
+        Stake::rebase();
+        let next_reward_ratio = Stake::next_reward_ratio();
+        //        StarcoinFramework::Debug::print(&next_reward_ratio);
+        assert!(next_reward_ratio == 1094527363184079601, 1);
+    }
+}
+// check: MoveAbort 52993
+
+
+//# run --signers alice
+script {
+    use FLYAdmin::Stake;
+
+    fun unstake(signer: signer) {
+        Stake::unstake(&signer, 5000000000u128);
+    }
+}
+// check: MoveAbort 52993
+
+//# run --signers FLYAdmin
+script {
+    use FLYAdmin::Config;
+
+    fun set_global_switch_off(signer: signer) {
+        Config::set_global_switch(&signer, false);
+    }
+}
+// check: EXECUTED

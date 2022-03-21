@@ -142,3 +142,60 @@ script {
         Bond::redeem<STC::STC>(&signer);
     }
 }
+
+//# run --signers FLYAdmin
+script {
+    use FLYAdmin::Config;
+
+    fun set_global_switch_on(signer: signer) {
+        Config::set_global_switch(&signer, true);
+    }
+}
+// check: EXECUTED
+
+//# run --signers alice
+script {
+    use StarcoinFramework::STC;
+    use FLYAdmin::Bond;
+    use FLYAdmin::ExponentialU256;
+
+    fun deposit_stc_bond_expect_fail_global_switch_on(signer: signer) {
+        Bond::deposit<STC::STC>(&signer, 1000000u128, 152800000000000000u128);
+        let bond_price = Bond::bond_price<STC::STC>();
+        assert!(ExponentialU256::mantissa_to_u128(bond_price) == 1000099999980000000, 1);
+    }
+}
+// check: MoveAbort 52993
+
+//# run --signers alice
+script {
+    use StarcoinFramework::STC;
+    use FLYAdmin::Bond;
+
+    fun redeem_stc_bond_expect_fail_global_switch_on(signer: signer) {
+        Bond::redeem<STC::STC>(&signer);
+    }
+}
+// check: MoveAbort 52993
+
+//# run --signers FLYAdmin
+script {
+    use FLYAdmin::Config;
+
+    fun set_global_switch_off(signer: signer) {
+        Config::set_global_switch(&signer, false);
+    }
+}
+// check: EXECUTED
+
+//# run --signers alice
+script {
+    use StarcoinFramework::STC;
+    use FLYAdmin::Bond;
+
+    fun deposit_stc_bond(signer: signer) {
+        Bond::deposit<STC::STC>(&signer, 1000000u128, 152800000000000000u128);
+    }
+}
+// check: EXECUTED
+
