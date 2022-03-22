@@ -2,28 +2,16 @@ address FLYAdmin {
 module InitializeScript {
 
     use StarcoinFramework::STC::STC;
-//    use FLYAdmin::FAIMock;
+    use FLYAdmin::Bond;
     use FLYAdmin::Config;
+    use FLYAdmin::Treasury;
     use FLYAdmin::FLY::{FLY};
     use FLYAdmin::Initialize;
     use SwapAdmin::TokenSwapRouter;
     use FaiAdmin::FAI::{FAI};
 
-
-//    public(script) fun safe_mint<TokenType: store>(account: signer, token_amount: u128) {
-//        let is_accept_token = Account::is_accepts_token<TokenType>(Signer::address_of(&account));
-//        if (!is_accept_token) {
-//            Account::do_accept_token<TokenType>(&account);
-//        };
-//        let token = TokenMock::mint_token<TokenType>(token_amount);
-//        Account::deposit<TokenType>(Signer::address_of(&account), token);
-//    }
-
     public(script) fun initialize_treasury(account: signer) {
-
-//        TokenMock::register_token<FAI>(&account, 9u8);
         Initialize::initialize_treasury(&account);
-
     }
 
     public(script) fun initialize_swap(account: signer) {
@@ -34,6 +22,14 @@ module InitializeScript {
         TokenSwapRouter::register_swap_pair<FLY, STC>(&account);
         assert!(TokenSwapRouter::swap_pair_exists<FLY, STC>(), 112);
 
+    }
+
+    public(script) fun initialize_bond<TokenType: store+drop+copy>(account: signer) {
+        Bond::initialize_bond<TokenType>(&account);
+    }
+
+    public(script) fun init_treasury<TokenType: store+drop+copy>(account: signer) {
+        Treasury::initialize_pool<TokenType>(&account);
     }
 
     public(script) fun initialize_bond_stake(account: signer) {
@@ -52,7 +48,6 @@ module InitializeScript {
         fee: u128,
         max_debt: u128,
         vesting_term: u128
-
     ) {
         Config::init_bond_config<TokenType>(
             &account,
