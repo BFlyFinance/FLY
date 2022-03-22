@@ -3,6 +3,7 @@ module Bond {
 
     use StarcoinFramework::STC;
     use StarcoinFramework::Token;
+    use StarcoinFramework::Event;
     use StarcoinFramework::Signer;
     use StarcoinFramework::Account;
     use StarcoinFramework::Timestamp;
@@ -41,17 +42,41 @@ module Bond {
         cap: Treasury::SharedMintCap
     }
 
+    struct DepositEvent has store, drop{
+        token_type: Token::TokenCode,
+        amount: u128,
+        depositor: address,
+        usd_price: u128,
+        payout: u128
+    }
+
+    struct RedeemEvent has store, drop {
+        token_type: Token::TokenCode,
+        redeemer: address,
+        amount: u128
+    }
+
+    struct BondEventHandle has key, store {
+        deposit_event: Event::EventHandle<DepositEvent>,
+        redeem_event: Event::EventHandle<RedeemEvent>
+    }
+
     public fun initialize(sender: &signer) {
         let mint_cap = Treasury::get_mint_cap(sender);
         move_to(sender, MintCap {cap: mint_cap});
+        move_to(sender, BondEventHandle {
+            deposit_event: Event::new_event_handle<DepositEvent>(sender),
+            redeem_event: Event::new_event_handle<RedeemEvent>(sender)
+        });
     }
+
     public fun initialize_bond<TokenType: copy+drop+store>(sender: &signer) {
         Admin::is_admin(sender);
         move_to(sender, Info<TokenType>{total_debt: 0, total_purchased: 0, last_update_time: Timestamp::now_seconds()});
     }
 
     public fun deposit<TokenType: copy+drop+store>(sender: &signer, amount: u128, max_price: u128)
-    acquires Info, Bond, MintCap {
+    acquires Info, Bond, MintCap, BondEventHandle {
         Config::check_global_switch();
         let admin_address = Admin::admin_address();
         decay_debt<TokenType>();
@@ -61,38 +86,55 @@ module Bond {
         let info = borrow_global<Info<TokenType>>(admin_address);
         assert!(info.total_purchased <= max_debt, EXCEEDS_MAX_AMOUNT);
         let native_price = bond_price<TokenType>();
-        StarcoinFramework::Debug::print(&native_price);
         let usd_price = bond_price_usd<TokenType>();
-        StarcoinFramework::Debug::print(&usd_price);
         let price = ExponentialU256::mantissa_to_u128(copy native_price);
         assert!(max_price >= usd_price, SLIPPAGE_LIMIT);
         let value = TreasuryHelper::value_of<TokenType>(amount);
         let payout = payout_for<TokenType>(value);
-        let dao_fee = TreasuryHelper::fee_calc(copy payout, fee);
+        let dao_fee = TreasuryHelper::fee_calc(payout, fee);
         Treasury::deposit<TokenType>(sender, amount);
         let mint_cap = borrow_global<MintCap>(admin_address);
         Treasury::deposit_dao_fee_with_cap(dao_fee, &mint_cap.cap);
         let info = borrow_global_mut<Info<TokenType>>(admin_address);
         info.total_debt = info.total_debt + value;
         info.total_purchased = info.total_purchased + amount;
-        create_voucher<TokenType>(sender, amount, price, (vesting_term as u64));
+        create_voucher<TokenType>(sender, payout, price, (vesting_term as u64));
+        let event = borrow_global_mut<BondEventHandle>(admin_address);
+        Event::emit_event(&mut event.deposit_event,
+            DepositEvent {
+                token_type: Token::token_code<TokenType>(),
+                depositor: Signer::address_of(sender),
+                amount: amount,
+                usd_price: usd_price,
+                payout: payout
+            });
     }
 
-    public fun redeem<TokenType: copy+drop+store>(sender: &signer) acquires Bond {
+    public fun redeem<TokenType: copy+drop+store>(sender: &signer) acquires Bond, BondEventHandle {
         Config::check_global_switch();
         let percent = percent_vested_for<TokenType>(Signer::address_of(sender));
         let voucher = borrow_global_mut<Bond<TokenType>>(Signer::address_of(sender));
         let balance = Token::value<FLY::FLY>(&voucher.token);
+        let _amount = balance;
         if (ExponentialU256::equal_exp(copy percent, ExponentialU256::exp(1, 1))) {
+            _amount = balance;
             let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, balance);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
         } else {
             let amount_exp = ExponentialU256::mul_exp(ExponentialU256::exp_direct(voucher.payout), percent);
-            let amount = ExponentialU256::mantissa_to_u128(amount_exp);
-            let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, amount);
+            _amount = ExponentialU256::mantissa_to_u128(amount_exp);
+            let tokens = Token::withdraw<FLY::FLY>(&mut voucher.token, _amount);
             Account::deposit_to_self<FLY::FLY>(sender, tokens);
         };
         voucher.last_time = Timestamp::now_seconds();
+        let admin_address = Admin::admin_address();
+        let event = borrow_global_mut<BondEventHandle>(admin_address);
+        Event::emit_event(&mut event.redeem_event,
+            RedeemEvent {
+                token_type: Token::token_code<TokenType>(),
+                redeemer: Signer::address_of(sender),
+                amount: _amount
+            });
     }
 
     fun create_voucher<TokenType: copy+drop+store>(sender: &signer, amount: u128, price: u128, vesting: u64)

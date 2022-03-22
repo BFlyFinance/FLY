@@ -30,6 +30,10 @@ module MarketScript {
         Stake::forfeit(&sender);
     }
 
+    public(script) fun rebase(_sender: signer) {
+        Stake::rebase();
+    }
+
 //    public(script) fun debt_ratio<TokenType: copy+drop+store>(): u128 {
 //        let debt_ratio_exp = Bond::debt_ratio<TokenType>();
 //        ExponentialU256::mantissa_to_u128(debt_ratio_exp)
