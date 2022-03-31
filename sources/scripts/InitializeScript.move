@@ -3,6 +3,7 @@ module InitializeScript {
 
     use StarcoinFramework::STC::STC;
     use FLYAdmin::Bond;
+    use FLYAdmin::Stake;
     use FLYAdmin::Config;
     use FLYAdmin::Treasury;
     use FLYAdmin::FLY::{FLY};
@@ -26,6 +27,14 @@ module InitializeScript {
 
     public(script) fun initialize_bond<TokenType: store+drop+copy>(account: signer) {
         Bond::initialize_bond<TokenType>(&account);
+    }
+
+    public(script) fun initialize_stake(account: signer) {
+        Stake::initialize(&account);
+        Config::init_stake_config<FLY>(&account,
+        100000000000000000u128,
+        28800u64
+        );
     }
 
     public(script) fun init_treasury<TokenType: store+drop+copy>(account: signer) {
