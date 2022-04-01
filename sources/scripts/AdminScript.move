@@ -44,5 +44,9 @@ module AdminScript {
     public(script) fun withdraw_asset<TokenType: store+drop+copy>(account: signer, amount: u128) {
         Treasury::withdraw<TokenType>(&account, amount);
     }
+
+    public(script) fun set_global_switch(account: signer, switch: bool) {
+        Config::set_global_switch(&account, switch);
+    }
 }
 }

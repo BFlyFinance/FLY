@@ -205,15 +205,15 @@ module Bond {
             let (price, dec) = Price::unpack(token_price);
             let native_price_exp_mul_price = ExponentialU256::mul_scalar_exp(native_price_exp, price);
             let bond_price_usd_exp = ExponentialU256::div_scalar_exp(native_price_exp_mul_price, dec);
-            ExponentialU256::truncate_to_u128(bond_price_usd_exp)
+            ExponentialU256::mantissa_to_u128(bond_price_usd_exp)
         } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FAI::FAI, FLY::FLY>>()) {
             let token_value_markdown = TreasuryHelper::markdown<FAI::FAI, FLY::FLY>();
             let price_usd_exp = ExponentialU256::mul_scalar_exp(native_price_exp, token_value_markdown);
-            ExponentialU256::truncate_to_u128(price_usd_exp)
+            ExponentialU256::mantissa_to_u128(price_usd_exp)
         } else if (Token::is_same_token<TokenType, TokenSwap::LiquidityToken<FLY::FLY, STC::STC>>()) {
             let token_value_markdown = TreasuryHelper::markdown<FLY::FLY, STC::STC>();
             let price_usd_exp = ExponentialU256::mul_scalar_exp(native_price_exp, token_value_markdown);
-            ExponentialU256::truncate_to_u128(price_usd_exp)
+            ExponentialU256::mantissa_to_u128(price_usd_exp)
         } else {
             assert!(false, INVALID_TOKENTYPE);
             0
