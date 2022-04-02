@@ -74,17 +74,38 @@ task 15 'run'. lines 129-150:
 
 task 16 'run'. lines 152-165:
 {
-  "gas_used": 4002541,
+  "gas_used": 2192636,
   "status": {
-    "Keep": "Executed"
+    "Keep": {
+      "MoveAbort": [
+        {
+          "Module": {
+            "address": "0xa4c60527238c2893deaf3061b759c11e",
+            "name": "Bond"
+          }
+        },
+        3
+      ]
+    }
   }
 }
 
 task 18 'run'. lines 169-179:
 {
-  "gas_used": 577852,
+  "gas_used": 24462,
   "status": {
-    "Keep": "Executed"
+    "Keep": {
+      "ExecutionFailure": {
+        "location": {
+          "Module": {
+            "address": "0xa4c60527238c2893deaf3061b759c11e",
+            "name": "Bond"
+          }
+        },
+        "function": 11,
+        "code_offset": 1
+      }
+    }
   }
 }
 

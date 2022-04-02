@@ -25,6 +25,10 @@ module InitializeScript {
 
     }
 
+    public(script) fun bond_initialize(account: signer) {
+        Bond::initialize(&account);
+    }
+
     public(script) fun initialize_bond<TokenType: store+drop+copy>(account: signer) {
         Bond::initialize_bond<TokenType>(&account);
     }
