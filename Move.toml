@@ -4,9 +4,9 @@ version = "0.9.0"
 
 [addresses]
 StarcoinFramework = "0x1"
-FLYAdmin = "0xA4c60527238c2893deAF3061B759c11E"
+FLYAdmin = "0x04E82d369d8DC20f9E4D3EF42828c5A2"
 
 [dependencies]
 StarcoinFramework = {git = "https://github.com/starcoinorg/starcoin-framework.git", rev="01c84198819310620f2417413c3c800df8292ae5"}
 Starswap-Core = {git = "https://github.com/Elements-Studio/starswap-core.git", rev="ac2829a53a8f82478f0b1d0e9c6d961ad31f0a00"}
-FAI = {git= "https://github.com/BFlyFinance/FAI.git", rev="fe32587ff22fd2b9f0cdb68e916f4f226993d547"}
+FAI = {git= "https://github.com/BFlyFinance/FAI.git", rev="2918af09f81a882d33b1031c84aec63d055ffc66"}

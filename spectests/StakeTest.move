@@ -1,4 +1,4 @@
-//# init -n dev --public-keys SwapAdmin=0x5510ddb2f172834db92842b0b640db08c2bc3cd986def00229045d78cc528ac5 FaiAdmin=0x1725f86f6e4492afc3c2a6089d7d53a07ae88297b780464d13bba404a969d189 FLYAdmin=0xd948aab1ee547c97d5d3f91b08e0823f021c8d7d111054c4ae667db8165e2942
+//# init -n dev --public-keys SwapAdmin=0x5510ddb2f172834db92842b0b640db08c2bc3cd986def00229045d78cc528ac5 FaiAdmin=0x523d767f264a27a1f68f6a45cd9084ee2c827e05edacc747b701cba39e684110 FLYAdmin=0x5c290bb35aba879ca20e25ce81082c28db82650b32027fda13d4c6a2d2891cea
 
 //# faucet --addr SwapAdmin --amount 100000000000000
 
@@ -28,8 +28,10 @@ script {
 //# run --signers FaiAdmin
 script {
     use FaiAdmin::InitializeScript;
+    use FaiAdmin::STCVaultPoolA;
 
     fun fai_init(signer: signer) {
+        STCVaultPoolA::initialize_event(&signer);
         InitializeScript::initialize(signer);
     }
 }

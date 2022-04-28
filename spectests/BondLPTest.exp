@@ -8,15 +8,15 @@ task 7 'run'. lines 16-27:
   }
 }
 
-task 8 'run'. lines 29-37:
+task 8 'run'. lines 29-39:
 {
-  "gas_used": 341397,
+  "gas_used": 511954,
   "status": {
     "Keep": "Executed"
   }
 }
 
-task 9 'run'. lines 39-47:
+task 9 'run'. lines 41-49:
 {
   "gas_used": 74601,
   "status": {
@@ -24,15 +24,15 @@ task 9 'run'. lines 39-47:
   }
 }
 
-task 10 'run'. lines 49-64:
+task 10 'run'. lines 51-66:
 {
-  "gas_used": 1152204,
+  "gas_used": 1212169,
   "status": {
     "Keep": "Executed"
   }
 }
 
-task 11 'run'. lines 66-74:
+task 11 'run'. lines 68-76:
 {
   "gas_used": 89001,
   "status": {
@@ -40,7 +40,7 @@ task 11 'run'. lines 66-74:
   }
 }
 
-task 12 'run'. lines 76-87:
+task 12 'run'. lines 78-89:
 {
   "gas_used": 373668,
   "status": {
@@ -48,7 +48,7 @@ task 12 'run'. lines 76-87:
   }
 }
 
-task 13 'run'. lines 89-108:
+task 13 'run'. lines 91-110:
 {
   "gas_used": 1139545,
   "status": {
@@ -56,7 +56,7 @@ task 13 'run'. lines 89-108:
   }
 }
 
-task 14 'run'. lines 110-127:
+task 14 'run'. lines 112-129:
 {
   "gas_used": 1290405,
   "status": {
@@ -64,7 +64,7 @@ task 14 'run'. lines 110-127:
   }
 }
 
-task 15 'run'. lines 129-150:
+task 15 'run'. lines 131-152:
 {
   "gas_used": 728789,
   "status": {
@@ -72,7 +72,7 @@ task 15 'run'. lines 129-150:
   }
 }
 
-task 16 'run'. lines 152-165:
+task 16 'run'. lines 154-167:
 {
   "gas_used": 2192636,
   "status": {
@@ -80,7 +80,7 @@ task 16 'run'. lines 152-165:
       "MoveAbort": [
         {
           "Module": {
-            "address": "0xa4c60527238c2893deaf3061b759c11e",
+            "address": "0x04e82d369d8dc20f9e4d3ef42828c5a2",
             "name": "Bond"
           }
         },
@@ -90,7 +90,7 @@ task 16 'run'. lines 152-165:
   }
 }
 
-task 18 'run'. lines 169-179:
+task 18 'run'. lines 171-181:
 {
   "gas_used": 24462,
   "status": {
@@ -98,7 +98,7 @@ task 18 'run'. lines 169-179:
       "ExecutionFailure": {
         "location": {
           "Module": {
-            "address": "0xa4c60527238c2893deaf3061b759c11e",
+            "address": "0x04e82d369d8dc20f9e4d3ef42828c5a2",
             "name": "Bond"
           }
         },
@@ -109,7 +109,7 @@ task 18 'run'. lines 169-179:
   }
 }
 
-task 19 'run'. lines 181-189:
+task 19 'run'. lines 183-191:
 {
   "gas_used": 83003,
   "status": {
@@ -117,7 +117,7 @@ task 19 'run'. lines 181-189:
   }
 }
 
-task 20 'run'. lines 191-202:
+task 20 'run'. lines 193-204:
 {
   "gas_used": 27378,
   "status": {
@@ -125,7 +125,7 @@ task 20 'run'. lines 191-202:
       "MoveAbort": [
         {
           "Module": {
-            "address": "0xa4c60527238c2893deaf3061b759c11e",
+            "address": "0x04e82d369d8dc20f9e4d3ef42828c5a2",
             "name": "Config"
           }
         },
@@ -135,7 +135,7 @@ task 20 'run'. lines 191-202:
   }
 }
 
-task 21 'run'. lines 204-215:
+task 21 'run'. lines 206-217:
 {
   "gas_used": 26208,
   "status": {
@@ -143,7 +143,7 @@ task 21 'run'. lines 204-215:
       "MoveAbort": [
         {
           "Module": {
-            "address": "0xa4c60527238c2893deaf3061b759c11e",
+            "address": "0x04e82d369d8dc20f9e4d3ef42828c5a2",
             "name": "Config"
           }
         },
