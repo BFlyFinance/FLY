@@ -191,7 +191,7 @@ module Bond {
         = Config::get_bond_config<TokenType>();
         let bcv_debt_ratio = ExponentialU256::mul_exp(ExponentialU256::exp(bcv, 1), debt_ratio<TokenType>());
         let minimum_price_exp = ExponentialU256::exp_direct(minimum_price);
-        let bond_price_exp = ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp(1, 1));
+        let bond_price_exp = ExponentialU256::add_exp(bcv_debt_ratio, ExponentialU256::exp_direct(1));
         if (ExponentialU256::greater_than_exp(copy minimum_price_exp, copy bond_price_exp)) {
             bond_price_exp = minimum_price_exp;
         };
